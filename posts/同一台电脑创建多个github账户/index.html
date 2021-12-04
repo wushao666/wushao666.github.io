@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>同一台电脑创建多个github账户 | 吴少林写字的地方</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="通常我们会有一个工作的gitlab账户、还会有一个github私人账号用，或者有两个及以上的github账号，所以在同一台电脑上会存在多个github账户的情况，此时默认的githug配置不在生效，我们要先清除掉之前设置的全局github 用户名和邮箱。">
+    <meta name="generator" content="Hugo 0.89.4" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+      
+
+    
+
+    
+    
+    <meta property="og:title" content="同一台电脑创建多个github账户" />
+<meta property="og:description" content="通常我们会有一个工作的gitlab账户、还会有一个github私人账号用，或者有两个及以上的github账号，所以在同一台电脑上会存在多个github账户的情况，此时默认的githug配置不在生效，我们要先清除掉之前设置的全局github 用户名和邮箱。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/posts/%E5%90%8C%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E5%88%9B%E5%BB%BA%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E6%88%B7/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-12-04T21:52:55+08:00" />
+<meta property="article:modified_time" content="2021-12-04T21:52:55+08:00" />
+
+<meta itemprop="name" content="同一台电脑创建多个github账户">
+<meta itemprop="description" content="通常我们会有一个工作的gitlab账户、还会有一个github私人账号用，或者有两个及以上的github账号，所以在同一台电脑上会存在多个github账户的情况，此时默认的githug配置不在生效，我们要先清除掉之前设置的全局github 用户名和邮箱。"><meta itemprop="datePublished" content="2021-12-04T21:52:55+08:00" />
+<meta itemprop="dateModified" content="2021-12-04T21:52:55+08:00" />
+<meta itemprop="wordCount" content="138">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="同一台电脑创建多个github账户"/>
+<meta name="twitter:description" content="通常我们会有一个工作的gitlab账户、还会有一个github私人账号用，或者有两个及以上的github账号，所以在同一台电脑上会存在多个github账户的情况，此时默认的githug配置不在生效，我们要先清除掉之前设置的全局github 用户名和邮箱。"/>
+
+	
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        吴少林写字的地方
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      
+<div class="ananke-socials">
+  
+</div>
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        POSTS
+      </aside>
+      
+
+
+
+
+
+
+
+
+
+
+  <div id="sharing" class="mt3 ananke-socials">
+    
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">同一台电脑创建多个github账户</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2021-12-04T21:52:55+08:00">December 4, 2021</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><p>通常我们会有一个工作的gitlab账户、还会有一个github私人账号用，或者有两个及以上的github账号，所以在同一台电脑上会存在多个<code>github</code>账户的情况，此时默认的githug配置不在生效，我们要先清除掉之前设置的全局<code>github 用户名和邮箱</code>。</p>
+<h2 id="1配置仓库设置">1.配置仓库设置</h2>
+<h3 id="11-清除全局配置">1.1 清除全局配置</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">git</span> <span style="color:#a6e22e">config</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">global</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">unset</span> <span style="color:#e6db74">&#39;user.name&#39;</span>
+<span style="color:#a6e22e">git</span> <span style="color:#a6e22e">config</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">global</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">unset</span> <span style="color:#e6db74">&#39;user.email&#39;</span>
+</code></pre></div><h3 id="12-设置local配置">1.2 设置local配置</h3>
+<p>然后不同的git项目需要单独配置一次</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">git</span> <span style="color:#a6e22e">config</span> <span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">name</span> <span style="color:#e6db74">&#34;your_name&#34;</span>
+<span style="color:#a6e22e">git</span> <span style="color:#a6e22e">config</span> <span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">email</span> <span style="color:#e6db74">&#34;your_email@example.com&#34;</span>
+</code></pre></div><p>所以，以后我们的项目也<strong>只能使用ssh方式操作</strong>。</p>
+<h2 id="2-生成多个ssh-key">2. 生成多个<code>ssh key</code></h2>
+<p>既然我们需要多个<code>github</code>账户，就需要多个独立的<code>ssh key</code>。</p>
+<ol>
+<li>查看电脑上所有的<code>ssh key</code>，<code>ls -al ~/.ssh</code></li>
+<li>采用rsa老算法生成<code>ssh key</code>, 使用<code>ssh-keygen -t rsa -b 4096 -C &quot;your_email@example.com&quot;</code>，这里要格外注意第二次生成时，要起另一个名字，例如默认名字会是<code>id_rsa</code>，此时我们输入一个<code>id_rsa_wsl</code>，<code>.ssh</code>目录下就会用两对不同的公私钥了，新的ed25519算法生成公私钥的<code>ssh-keygen -t ed25519 -C &quot;your_email@example.com&quot;</code>暂时不知道如何配置下一章的<code>ssh config</code>。
+<img src="/images/createMd/sshkey.png" alt="目录结构"></li>
+<li>分别在不同账户下的GitHub的设置中<a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account">粘贴ssh key 公钥</a>，<code>pbcopy &lt; ~/.ssh/id_rsa.pub</code></li>
+</ol>
+<h2 id="3-配置ssh-config">3. 配置ssh config</h2>
+<p>如果在<code>.ssh</code>目录下没有<code>config</code>文件，需要创建<code>touch ~/.ssh/config</code>,
+修改<code>config</code>，以我的配置文件为例，默认经常使用的<code>github</code>账户为账户1，生成ssh key 时直接使用默认的，账户2采用别名<code>id_rsa_wsl</code>，配置文件中的<strong>Host名字</strong>一定不能一样，对后面不同账户的的git 操作极为重要,以下是配置文件内容：</p>
+<pre tabindex="0"><code># github 账户1
+Host github.com
+HostName github.com
+PreferredAuthentications publickey
+IdentityFile ~/.ssh/id_rsa
+
+# 账户2
+Host wsl
+HostName github.com
+PreferredAuthentications publickey
+IdentityFile ~/.ssh/id_rsa_wsl
+</code></pre><p>配置完了上述操作后，测试一下</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">ssh</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">T</span> <span style="color:#a6e22e">git</span><span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">github</span>.<span style="color:#a6e22e">com</span>
+<span style="color:#a6e22e">ssh</span> <span style="color:#f92672">-</span><span style="color:#a6e22e">T</span> <span style="color:#a6e22e">git</span><span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">wsl</span>
+</code></pre></div><p>上面@后面的那个就是config中的那个<code>Host名字</code>，配置啥都可以，只要这里保持一致即可。</p>
+<h2 id="注意">注意</h2>
+<p>因为我们有了多个GitHub账户，就不能再使用默认配置了，以后不同项目的克隆和提交啥的操作，对于不同的项目ssh url要修改一下，例如我们的账户2需要克隆时修改一下：</p>
+<pre tabindex="0"><code>git@github.com:github用户名/仓库名.git
+修改为
+git@wsl:github用户名/仓库名.git
+</code></pre><p>在ssh操作中中，url的@与:之间就是Host。</p>
+<p>为了方便起见，我们在每个git项目的<code>.git/config</code>下可以直接更改<code>remote &quot;origin&quot;]</code>。</p>
+<pre tabindex="0"><code>[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+        ignorecase = true
+        precomposeunicode = true
+[remote &quot;origin&quot;]
+        url = git@wsl:wushao666/blog-generator.git //这里的Host名字改成对应的即可
+        fetch = +refs/heads/*:refs/remotes/origin/*
+[branch &quot;main&quot;]
+        remote = origin
+        merge = refs/heads/main
+</code></pre><ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="http://wushao666.github.io/" >
+    &copy;  吴少林写字的地方 2021 
+  </a>
+    <div>
+<div class="ananke-socials">
+  
+</div></div>
+  </div>
+</footer>
+
+  </body>
+</html>
