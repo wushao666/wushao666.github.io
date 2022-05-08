@@ -6,7 +6,7 @@
     <description>Recent content on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Sat, 04 Dec 2021 21:52:55 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 08 May 2022 22:42:02 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About</title>
       <link>http://wushao666.github.io/about/</link>
@@ -14,6 +14,15 @@
       
       <guid>http://wushao666.github.io/about/</guid>
       <description>热爱web开发的人，爱打球⛹，爱大自然❤</description>
+    </item>
+    
+    <item>
+      <title>云服务器搭建</title>
+      <link>http://wushao666.github.io/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/</link>
+      <pubDate>Sun, 08 May 2022 22:42:02 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/</guid>
+      <description>购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce</description>
     </item>
     
     <item>
