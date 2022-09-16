@@ -56,7 +56,7 @@
 写作是每个人都必备的技能，它可以帮你梳理逻辑，检查自己的思考过程。进入互联网时代后，手写文章的机会变得少了，使用网络博客的机会和场景变得多了起来，无论是自己做技术总结、公司写技术方案都需要博客，工具千千万，但是要想写的好文章却是要一直打磨。我从17年到今天之前我都是用的hexo搭建的博客，hexo是用javascript写的静态博客框架，使用起来也挺方便，但是安装过程和后续换电脑或者更新过后可能会遇到一些各种bug，后来被前辈老师朋友们安利hugo，它使用go写的，安装、运行都速度极快，对新手极为友好，故今天开始用它重新更新博客，并记录一下搭建的过程。
 "><meta itemprop="datePublished" content="2021-12-04T15:10:38+08:00" />
 <meta itemprop="dateModified" content="2021-12-05T11:33:46+08:00" />
-<meta itemprop="wordCount" content="1694">
+<meta itemprop="wordCount" content="1778">
 <meta itemprop="keywords" content="hugo," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="hugo搭建博客"/>
 <meta name="twitter:description" content="前言
@@ -146,7 +146,7 @@
         <div class="post-category">
             <a href="/categories/hugo/"> hugo </a>
             </div>
-          <span class="more-meta"> 约 1694 字 </span>
+          <span class="more-meta"> 约 1778 字 </span>
           <span class="more-meta"> 预计阅读 4 分钟 </span>
         
       </div>
@@ -265,7 +265,7 @@ theme = &#34;ananke&#34;
 <li>打包发布静态页面，如果上面预览没问题了，就打包静态文件，发布到网上<code>hugo -D</code></li>
 <li>每次更新了新文章都要重新<code>build</code>，即每次都要执行<code>hugo -D</code></li>
 </ul>
-<p>最终我们发布到网上的是根目录下的<code>public</code>目录。</p>
+<p>最终我们发布到网上的是根目录下的<code>public</code>目录，所以我们通常的操作是把在generator生成器的仓库中的public目录不提交，而是拷贝该目录到下一小节的真正的博客展示仓库中去，通过真正的博客展示仓库展现blog。</p>
 <h2 id="发布博客">发布博客</h2>
 <p>以上我们只是创建完了本地博客，那么如何发布到<code>github</code>上呢，我们需要做两件事：</p>
 <ol>

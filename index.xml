@@ -6,7 +6,7 @@
     <description>Recent content on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Fri, 16 Sep 2022 11:07:07 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 16 Sep 2022 16:58:00 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About</title>
       <link>http://wushao666.github.io/about/</link>
@@ -14,6 +14,15 @@
       
       <guid>http://wushao666.github.io/about/</guid>
       <description>热爱web开发的人，爱打球⛹，爱大自然❤</description>
+    </item>
+    
+    <item>
+      <title>手写goweb框架02-路由实现</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B602-%E8%B7%AF%E7%94%B1%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Fri, 16 Sep 2022 16:58:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B602-%E8%B7%AF%E7%94%B1%E5%AE%9E%E7%8E%B0/</guid>
+      <description>本节我们来实现框架的基础路由部分，我们会按照5步循序渐进的实现这个路由。 go原生实现基础路由 go的http包很强大，可以直接实现基础路由做测</description>
     </item>
     
     <item>
