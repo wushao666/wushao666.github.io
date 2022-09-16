@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>手写goweb框架01-分析框架 - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="为什么需要一个web框架，主要是因为我们使用原生go的http库进行开发web项目时，存在很多重复繁琐的操作，一些复杂的业务场景需要做大量的" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B601-%E5%88%86%E6%9E%90%E6%A1%86%E6%9E%B6/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="手写goweb框架01-分析框架" />
+<meta property="og:description" content="为什么需要一个web框架，主要是因为我们使用原生go的http库进行开发web项目时，存在很多重复繁琐的操作，一些复杂的业务场景需要做大量的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B601-%E5%88%86%E6%9E%90%E6%A1%86%E6%9E%B6/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-09-16T11:07:07+08:00" />
+<meta property="article:modified_time" content="2022-09-16T12:00:14+08:00" />
+
+<meta itemprop="name" content="手写goweb框架01-分析框架">
+<meta itemprop="description" content="为什么需要一个web框架，主要是因为我们使用原生go的http库进行开发web项目时，存在很多重复繁琐的操作，一些复杂的业务场景需要做大量的"><meta itemprop="datePublished" content="2022-09-16T11:07:07+08:00" />
+<meta itemprop="dateModified" content="2022-09-16T12:00:14+08:00" />
+<meta itemprop="wordCount" content="1551">
+<meta itemprop="keywords" content="go," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="手写goweb框架01-分析框架"/>
+<meta name="twitter:description" content="为什么需要一个web框架，主要是因为我们使用原生go的http库进行开发web项目时，存在很多重复繁琐的操作，一些复杂的业务场景需要做大量的"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">手写goweb框架01-分析框架</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-09-16 </span>
+        <div class="post-category">
+            <a href="/categories/web%E4%B8%96%E7%95%8C/"> web世界 </a>
+            </div>
+          <span class="more-meta"> 约 1551 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#框架的设计原则和作用">框架的设计原则和作用</a>
+      <ul>
+        <li><a href="#框架的设计原则">框架的设计原则</a></li>
+        <li><a href="#框架的作用">框架的作用</a></li>
+      </ul>
+    </li>
+    <li><a href="#1-路由">1. 路由</a></li>
+    <li><a href="#2-处理器">2. 处理器</a></li>
+    <li><a href="#3-中间件">3. 中间件</a></li>
+    <li><a href="#4-orm支持">4. orm支持</a></li>
+    <li><a href="#5-工具">5. 工具</a></li>
+    <li><a href="#6-配置项">6. 配置项</a></li>
+    <li><a href="#7-插件">7. 插件</a></li>
+    <li><a href="#8-http协议支持">8. http协议支持</a></li>
+    <li><a href="#9-内置模板">9. 内置模板</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <blockquote>
+<p>为什么需要一个web框架，主要是因为我们使用原生go的http库进行开发web项目时，存在很多重复繁琐的操作，一些复杂的业务场景需要做大量的抽象操作，以上这些问题我们可以抽象成一个web框架来帮助提高开发效率。那为什么需要手写web框架呢，现在市面上存在很多go的web框架，例如<a href="https://github.com/gin-gonic/gin">gin-62.8k</a>、<a href="https://github.com/beego/beego">beego-28.8k</a>、<a href="https://github.com/labstack/echo">echo-23.8k</a>、<a href="https://github.com/kataras/iris">iris-22.8k</a>，但是我们如果只使用框架，不知道为什么那些api、中间件那样使用，就容易陷入知其然不知其所以然的困局，所以如果我们尝试自己实现一个完整的web框架就显得很有意思了😃。</p>
+</blockquote>
+<h2 id="框架的设计原则和作用">框架的设计原则和作用</h2>
+<p>在实现框架之前，我们先来了解一下框架的一些基本原则和要解决哪些问题。</p>
+<h3 id="框架的设计原则">框架的设计原则</h3>
+<ol>
+<li>高内聚，低耦合，便于维护和拓展</li>
+<li>封装底层实现，使用更为便捷</li>
+<li>封装重复性代码，减少代码编写量</li>
+<li>提供常用工具类</li>
+</ol>
+<h3 id="框架的作用">框架的作用</h3>
+<ol>
+<li>协调资源，比如数据库，文件，缓存等</li>
+<li>资源抽象，用于表示资源，程序通过一个抽象的概念与资源进行交互</li>
+<li>通信，资源之间需要进行沟通交流</li>
+<li>约定，大家遵照框架的约定，有助于简化框架的实现</li>
+<li>环境，框架需要支持不同的应用环境</li>
+<li>最主要的目的，<strong>让开发人员专注于编写业务逻辑，而不用关心别的事情</strong></li>
+</ol>
+<hr>
+<p>那我们这次的goweb框架遵守以上的原则，要实现哪些基础部分呢，主要有以下9个大部分。</p>
+<h2 id="1-路由">1. 路由</h2>
+<p>回想一下我们业务代码的请求方式是什么样子的，当我们要去获取某个用户信息、修改某个用户信息</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">GET</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//localhost:8080/api/getUser?id=1
+</span><span class="c1"></span><span class="nx">POST</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//localhost:8080/api/updateUser
+</span></code></pre></td></tr></table>
+</div>
+</div><p>上面的请求资源路径的url，其中的http协议、域名，这些通常不需要我们格外关注，端口号通常固定一个，重点是：</p>
+<ol>
+<li>请求方法是什么，GET POST，需要开发人员定义</li>
+<li><code>/api/getUser?id=1</code>和<code>/api/updateUser</code>这些资源路径需要开发人员定义</li>
+</ol>
+<p>通俗来说，框架需要处理上方类似<code>api/updateUser</code>这样的路径请求，并根据请求方式将其转发到具体的业务逻辑执行代码，也就是说要在请求的URL和处理函数之间，搭建一个桥梁，将它们准确的关联起来，这就是<code>路由</code>。</p>
+<p>同时路由中还要求:</p>
+<ol>
+<li>可以支持动态路由，例如<code>?id=1</code>、<code>/api/**/getUser</code></li>
+<li>请求参数解析，post的json解析、文件解析</li>
+<li>参数校验，包括表单校验</li>
+</ol>
+<h2 id="2-处理器">2. 处理器</h2>
+<p>这部分就是所谓的<code>handler</code>（java中也可以理解成<code>controller</code>），上一节我们了解到了路由的主要功能是把请求方式转发到对应的业务逻辑代码中，这里所谓的业务逻辑代码就是<code>Handler处理器</code>，它的主要作用就是需要处理请求<code>request</code>并处理相应<code>response</code>，怎么解析需要一个完备的方案。</p>
+<h2 id="3-中间件">3. 中间件</h2>
+<p>中间件最通俗的解释就是 可以帮助你额外实现一些功能，不用也毫无影响框架的一些代码。
+当执行具体的处理器业务的时候，往往需要<strong>在其前后</strong>进行一些新增的功能，或者增强的功能，或者复用的代码，但是并不希望入侵代码，这就是中间件的作用。</p>
+<p>典型的有：</p>
+<ol>
+<li>日志</li>
+<li>错误处理</li>
+<li>认证权限</li>
+<li>session</li>
+<li>解析请求体等</li>
+</ol>
+<h2 id="4-orm支持">4. orm支持</h2>
+<p><a href="https://www.ruanyifeng.com/blog/2019/02/orm-tutorial.html">ORM</a> 就是通过实例对象的语法，完成关系型数据库的操作的技术，是&quot;对象-关系映射&quot;（Object/Relational Mapping） 的缩写，可以简化我们书写sql语法，直接使用面向对象的语法操作数据库。
+现代的web框架操作数据库时都提供了较为好用的orm库，我们的框架也要尝试实现一个简单的orm库。</p>
+<h2 id="5-工具">5. 工具</h2>
+<p>比如常用的工具类，或者命令行工具，可以便捷生成代码，一些常用的字符串操作啥的，都可以抽象成工具类使用。</p>
+<h2 id="6-配置项">6. 配置项</h2>
+<p>将用到的一些第三方工具或者框架，做成可配置的，便于使用者进行替换
+将一些配置，做成可配置的，便于开发者根据需要自行配置</p>
+<h2 id="7-插件">7. 插件</h2>
+<p>提供丰富的插件，可以便捷集成服务，比如sentinel go集成</p>
+<h2 id="8-http协议支持">8. http协议支持</h2>
+<p>支持http https http2等</p>
+<h2 id="9-内置模板">9. 内置模板</h2>
+<p>使用内置模板引擎提供模板渲染机制</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-09-16
+        <a href="/commit/9204329feba7c5d95144d3f03bf00826da8044a6" title="What: update">(9204329)</a>
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/go/">go</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/">
+            <span class="next-text nav-default">云服务器搭建</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
