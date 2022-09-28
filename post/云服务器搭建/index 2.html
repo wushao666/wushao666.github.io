@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>云服务器搭建 - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="云服务器搭建" />
+<meta property="og:description" content="购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-05-08T22:42:02+08:00" />
+<meta property="article:modified_time" content="2022-05-08T23:20:50+08:00" />
+
+<meta itemprop="name" content="云服务器搭建">
+<meta itemprop="description" content="购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce"><meta itemprop="datePublished" content="2022-05-08T22:42:02+08:00" />
+<meta itemprop="dateModified" content="2022-05-08T23:20:50+08:00" />
+<meta itemprop="wordCount" content="621">
+<meta itemprop="keywords" content="ECS," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="云服务器搭建"/>
+<meta name="twitter:description" content="购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">云服务器搭建</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-05-08 </span>
+        <div class="post-category">
+            <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/"> 服务器 </a>
+            </div>
+          <span class="more-meta"> 约 621 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#购买云服务器">购买云服务器</a></li>
+    <li><a href="#购买域名">购买域名</a></li>
+    <li><a href="#重置云服务器的密码">重置云服务器的密码</a>
+      <ul>
+        <li><a href="#安装nvm">安装<code>nvm</code></a></li>
+        <li><a href="#升级git">升级git</a></li>
+      </ul>
+    </li>
+    <li><a href="#配置https">配置https</a></li>
+    <li><a href="#关闭防火墙httpshelpaliyuncomdocument_detail41319htmspma2c4g11186623001736fd95q6jdkk"><a href="https://help.aliyun.com/document_detail/41319.htm?spm=a2c4g.11186623.0.0.1736fd95Q6Jdkk">关闭防火墙</a></a>
+      <ul>
+        <li><a href="#ecs服务器内部关闭防火墙">ecs服务器内部关闭防火墙</a></li>
+        <li><a href="#腾讯云防火墙策略放开">腾讯云防火墙策略放开</a></li>
+      </ul>
+    </li>
+    <li><a href="#好用的命令">好用的命令</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="购买云服务器">购买云服务器</h2>
+<p>阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以centos为例。</p>
+<h2 id="购买域名">购买域名</h2>
+<p>阿里云或者腾讯云都可，红框填写云服务器对外的公网IP.
+<img src="/images/ecs/yuming.png" alt=""></p>
+<h2 id="重置云服务器的密码">重置云服务器的密码</h2>
+<p>只有重置过密码才能ssh，登录进来。<code>ssh</code>登录完后，尝试安装node的包管理器<code>nvm</code>，<a href="https://cloud.tencent.com/developer/article/1886344">详细文档</a></p>
+<h3 id="安装nvm">安装<code>nvm</code></h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh <span class="p">|</span> bash
+<span class="c1"># 或者</span>
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh <span class="p">|</span> bash
+<span class="c1"># 验证</span>
+<span class="nb">command</span> -v nvm
+<span class="c1"># 设置nvm自动运行</span>
+<span class="nb">echo</span> <span class="s2">&#34;source ~/nvm/nvm.sh&#34;</span> &gt;&gt; ~/.bashrc <span class="c1"># 有可能是.nvm，视具体情况具体分析</span>
+<span class="nb">source</span> ~/.bashrc
+<span class="c1"># 列出可用版本</span>
+nvm list-remote
+<span class="c1"># 从上面的可用列表中选择LTS版本即可</span>
+nvm install v8.6.0
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="升级git">升级git</h3>
+<p>有的git版本太低，建议升级</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 查看版本</span>
+git --version
+<span class="c1"># 如果存在版本号，务必进行 卸载Git</span>
+yum remove git
+<span class="c1"># 安装相关依赖</span>
+yum install -y zlib-devel bzip2-devel openssl-devel ncurses-devel gcc perl-ExtUtils-MakeMaker package
+<span class="c1"># 访问可查看你需要下载的版本：https://www.kernel.org/pub/software/scm/git</span>
+
+<span class="c1"># 下载</span>
+wget https://www.kernel.org/pub/software/scm/git/git-2.14.0.tar.gz <span class="c1">#有可能需要翻墙或者直接下载到本地</span>
+
+tar -zxvf git-2.14.0.tar.gz
+
+<span class="nb">cd</span> git-2.14.0
+
+./configure --prefix<span class="o">=</span>/usr/local/git all
+
+make <span class="o">&amp;&amp;</span> make install
+
+<span class="nb">echo</span> <span class="s2">&#34;export PATH=</span><span class="nv">$PATH</span><span class="s2">:/usr/local/git/bin&#34;</span> &gt;&gt; /etc/bashrc
+
+<span class="nb">source</span> /etc/bashrc
+
+git --version
+<span class="c1"># 结果-&gt; git version 2.14.0</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="配置https">配置https</h2>
+<p>一般云服务器都可以免费申请一年https证书
+按照如图所示步骤进行，操作，最后申请通过后会得到的俩个值，与域名解析那做CNAME匹配，再次检查https证书状态，直到成功。
+<img src="/images/ecs/1.png" alt="">
+<img src="/images/ecs/2.png" alt="">
+<img src="/images/ecs/3.png" alt="">
+<img src="/images/ecs/4.png" alt=""></p>
+<h2 id="关闭防火墙httpshelpaliyuncomdocument_detail41319htmspma2c4g11186623001736fd95q6jdkk"><a href="https://help.aliyun.com/document_detail/41319.htm?spm=a2c4g.11186623.0.0.1736fd95Q6Jdkk">关闭防火墙</a></h2>
+<h3 id="ecs服务器内部关闭防火墙">ecs服务器内部关闭防火墙</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">systemctl status firewalld
+systemctl stop firewalld
+systemctl disable firewalld
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="腾讯云防火墙策略放开">腾讯云防火墙策略放开</h3>
+<p><img src="/images/ecs/5.png" alt=""></p>
+<h2 id="好用的命令">好用的命令</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">netstat -ntpl <span class="p">|</span> grep <span class="m">443</span> <span class="c1"># 查看443端口情况</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-08
+        <a href="/commit/84f03df23ff97825544c5926f16c967896563dad" title="What:  更新云服务器搭建">(84f03df)</a>
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ecs/">ECS</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B601-%E5%88%86%E6%9E%90%E6%A1%86%E6%9E%B6/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">手写goweb框架01-分析框架</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E5%90%8C%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E5%88%9B%E5%BB%BA%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E6%88%B7/">
+            <span class="next-text nav-default">同一台电脑创建多个github账户</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
