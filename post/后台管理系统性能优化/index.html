@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>后台管理系统性能优化 - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="项目结构调整 Base开头是全局业务组件 BaseForm BasePagination BaseIcon Form开头是Form相关的小组件 FormPanel Table开发时Table相关的小组件 TableOptions The开头的是每个页" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="后台管理系统性能优化" />
+<meta property="og:description" content="项目结构调整 Base开头是全局业务组件 BaseForm BasePagination BaseIcon Form开头是Form相关的小组件 FormPanel Table开发时Table相关的小组件 TableOptions The开头的是每个页" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-09-28T10:28:03+08:00" />
+<meta property="article:modified_time" content="2022-09-28T10:28:03+08:00" />
+
+<meta itemprop="name" content="后台管理系统性能优化">
+<meta itemprop="description" content="项目结构调整 Base开头是全局业务组件 BaseForm BasePagination BaseIcon Form开头是Form相关的小组件 FormPanel Table开发时Table相关的小组件 TableOptions The开头的是每个页"><meta itemprop="datePublished" content="2022-09-28T10:28:03+08:00" />
+<meta itemprop="dateModified" content="2022-09-28T10:28:03+08:00" />
+<meta itemprop="wordCount" content="1224">
+<meta itemprop="keywords" content="http," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="后台管理系统性能优化"/>
+<meta name="twitter:description" content="项目结构调整 Base开头是全局业务组件 BaseForm BasePagination BaseIcon Form开头是Form相关的小组件 FormPanel Table开发时Table相关的小组件 TableOptions The开头的是每个页"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">后台管理系统性能优化</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-09-28 </span>
+        <div class="post-category">
+            <a href="/categories/web%E4%B8%96%E7%95%8C/"> web世界 </a>
+            </div>
+          <span class="more-meta"> 约 1224 字 </span>
+          <span class="more-meta"> 预计阅读 3 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#项目结构调整">项目结构调整</a></li>
+    <li><a href="#性能优化">性能优化</a>
+      <ul>
+        <li><a href="#网络请求相关">网络请求相关</a></li>
+        <li><a href="#构建相关">构建相关</a></li>
+        <li><a href="#编码相关">编码相关</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="项目结构调整">项目结构调整</h2>
+<ol>
+<li>Base开头是全局业务组件 BaseForm BasePagination BaseIcon</li>
+<li>Form开头是Form相关的小组件 FormPanel</li>
+<li>Table开发时Table相关的小组件 TableOptions</li>
+<li>The开头的是每个页面引入的无状态组件，TheSideBar TheBreadcrumb</li>
+</ol>
+<h2 id="性能优化">性能优化</h2>
+<p>从17m变成2.3m</p>
+<h3 id="网络请求相关">网络请求相关</h3>
+<ol>
+<li>用到的第三方类库使用CDN，推动运维搭建自己的CDN</li>
+<li>合理的缓存策略，例如首页的大背景图等确定长期不变的资源直接强缓存<code>Cache-Control: max-age=1000000</code>,某些资源 选择协商缓存</li>
+<li>开启gzip，不借助nginx的话使用compression-webpack-plugin，节省nginx资源，少占用cpu
+<code>gzip_static on</code>，NGINX开启这个选项即可主动寻找.gz结尾的文件，就不会占用CPU去压缩文件了。</li>
+</ol>
+<h3 id="构建相关">构建相关</h3>
+<ol>
+<li>路由懒加载 使用import()，传统路由组件通过import静态打包到项目里面，所有的页面组件都在一起了，生产环境下就加载的慢了。
+import()使ES6的模块有了动态加载的能力，让url匹配到相应的路径时，会动态加载页面组件，这样首屏的代码量会大幅减少，webpack会把动态加载的页面组件分离成单独的一个chunk.js文件，同时配置上路径别名会更好用。</li>
+<li>合理使用路径别名，例如<code>@ utils mixins</code>等等， 可以减少模块查找时耗费的时间。</li>
+<li>图片懒加载，在一开始图片只使用展位图，滚动到不同的位置加载不同的真正的图片吗，一般有两个方法：</li>
+</ol>
+<ul>
+<li><code>element.getBoundingClientRect()</code>，该方法返回一个DOMRect对象，包含了<code>bottom height left right top width x y</code>值，其中的<code>top值</code>代表当前DOM节点距离窗口顶部的高度，需判断top值是否小于当前浏览器窗口的高度（window.innerHeight），若小于说明已经进入用户视野，然后替换为真正的图片即可。
+使用这个方法需要注意三点：</li>
+</ul>
+<ol>
+<li>需要监听scroll事件，注意函数节流</li>
+<li>首屏渲染时不会触发scroll，需要手动调用事件处理函数</li>
+<li>当所有需要懒加载的图片都被加载完了，清楚事件监听器。</li>
+</ol>
+<ul>
+<li><code>IntersectionObserver()</code></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// intersectionObserver 实现懒加载
+</span><span class="c1"></span><span class="kd">let</span> <span class="nx">imgList2</span> <span class="o">=</span> <span class="p">[...</span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s2">&#34;.intersection_observer&#34;</span><span class="p">)]</span>
+
+<span class="kd">let</span> <span class="nx">lazyLoad2</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// 实例化observer
+</span><span class="c1"></span>    <span class="kd">let</span> <span class="nx">observer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">IntersectionObserver</span><span class="p">(</span><span class="nx">entries</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="c1">//entries存储着所有观察被元素的intersectionObserverEntry配置
+</span><span class="c1"></span>        <span class="nx">entries</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">entry</span> <span class="p">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// 大于0表示进入视口
+</span><span class="c1"></span>            <span class="k">if</span> <span class="p">(</span><span class="nx">entry</span><span class="p">.</span><span class="nx">intersectionRatio</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">entry</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="nx">entry</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">dataset</span><span class="p">.</span><span class="nx">src</span>
+                <span class="c1">//取消观察
+</span><span class="c1"></span>                <span class="nx">observer</span><span class="p">.</span><span class="nx">unobserve</span><span class="p">(</span><span class="nx">entry</span><span class="p">.</span><span class="nx">target</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+    <span class="nx">imgList2</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">img</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="nx">observer</span><span class="p">.</span><span class="nx">observe</span><span class="p">(</span><span class="nx">img</span><span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="4">
+<li>图片压缩</li>
+</ol>
+<h3 id="编码相关">编码相关</h3>
+<ol>
+<li>创建DOM相关的需求，尽量使用文档碎片</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">fragment</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createDocumentFragment</span><span class="p">();</span>
+  
+<span class="kd">let</span> <span class="nx">child</span><span class="p">;</span>
+<span class="k">while</span> <span class="p">((</span><span class="nx">child</span> <span class="o">=</span> <span class="nx">vm</span><span class="p">.</span><span class="nx">$el</span><span class="p">.</span><span class="nx">firstChild</span><span class="p">))</span> <span class="p">{</span>
+  <span class="nx">fragment</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">child</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// 处理完文档碎片
+</span><span class="c1"></span><span class="nx">element</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">fragment</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>避免频繁获取视图信息(getBoundingClientRect,clientWidth,offsetWidth)，这些操作会频繁地引发重排、重绘，而正式情况下浏览器会通过一个队列维护这些可执行性操作，等到超过了最大值或过了指定时间（1000ms/60 = 16.6ms）才会去清空队列一次性执行操作</li>
+<li>高频监听需要防抖节流</li>
+<li>CSS3动画，transform触发渲染层，开辟新的图层，避免重排重绘。</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-09-28
+        
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/http/">http</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/mini-vue3%E5%AE%9E%E7%8E%B0-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">01-vue3实现effect和reactive</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/http%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/">
+            <span class="next-text nav-default">Http缓存机制</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
