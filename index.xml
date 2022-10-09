@@ -6,7 +6,7 @@
     <description>Recent content on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Sun, 09 Oct 2022 14:59:45 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 09 Oct 2022 17:24:00 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About</title>
       <link>http://wushao666.github.io/about/</link>
@@ -14,6 +14,15 @@
       
       <guid>http://wushao666.github.io/about/</guid>
       <description>☀️ 热爱web开发的人，爱打球⛹，爱大自然❤ 🚀 我的另一个学习的博客地址</description>
+    </item>
+    
+    <item>
+      <title>手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</link>
+      <pubDate>Sun, 09 Oct 2022 17:24:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</guid>
+      <description>实现isReadonly和isReactive 这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例： 1 2 3 4 5 6 7 // reactive.spec.ts</description>
     </item>
     
     <item>
