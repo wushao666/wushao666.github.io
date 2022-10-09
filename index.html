@@ -126,7 +126,53 @@
           <section id="posts" class="posts">
     <article class="post">
   <header class="post-header">
-    <h1 class="post-title"><a class="post-link" href="/post/mini-vue3%E5%AE%9E%E7%8E%B0-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">01-vue3实现effect和reactive</a></h1>
+    <h1 class="post-title"><a class="post-link" href="/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/">手写miniVue3-03实现readonly并重构响应式模块</a></h1>
+    <div class="post-meta">
+      <span class="post-time"> 2022-10-09 </span>
+      <div class="post-category">
+          <a href="/categories/vue/"> vue </a>
+          </div>
+        <span class="more-meta"> 约 837 字 </span>
+        <span class="more-meta"> 预计阅读 2 分钟 </span>
+    </div>
+  </header>
+  
+  <div class="post-content">
+    <div class="post-summary">
+      重构reactive 本来我们应该直接实现readonly模块的，但是其实它本质上和reactive很像，只不过它是只读的，不能set，set
+    </div>
+    <div class="read-more">
+      <a href="/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/" class="read-more-link">阅读更多</a>
+    </div>
+  </div>
+</article>
+
+    <article class="post">
+  <header class="post-header">
+    <h1 class="post-title"><a class="post-link" href="/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/">手写miniVue3-02实现effect的runner-scheduler-stop功能</a></h1>
+    <div class="post-meta">
+      <span class="post-time"> 2022-10-09 </span>
+      <div class="post-category">
+          <a href="/categories/vue/"> vue </a>
+          </div>
+        <span class="more-meta"> 约 2150 字 </span>
+        <span class="more-meta"> 预计阅读 5 分钟 </span>
+    </div>
+  </header>
+  
+  <div class="post-content">
+    <div class="post-summary">
+      实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用
+    </div>
+    <div class="read-more">
+      <a href="/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/" class="read-more-link">阅读更多</a>
+    </div>
+  </div>
+</article>
+
+    <article class="post">
+  <header class="post-header">
+    <h1 class="post-title"><a class="post-link" href="/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">手写miniVue3-01实现effect和reactive</a></h1>
     <div class="post-meta">
       <span class="post-time"> 2022-10-08 </span>
       <div class="post-category">
@@ -142,7 +188,7 @@
       mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip
     </div>
     <div class="read-more">
-      <a href="/post/mini-vue3%E5%AE%9E%E7%8E%B0-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/" class="read-more-link">阅读更多</a>
+      <a href="/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/" class="read-more-link">阅读更多</a>
     </div>
   </div>
 </article>
@@ -235,52 +281,6 @@
     </div>
     <div class="read-more">
       <a href="/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B601-%E5%88%86%E6%9E%90%E6%A1%86%E6%9E%B6/" class="read-more-link">阅读更多</a>
-    </div>
-  </div>
-</article>
-
-    <article class="post">
-  <header class="post-header">
-    <h1 class="post-title"><a class="post-link" href="/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/">云服务器搭建</a></h1>
-    <div class="post-meta">
-      <span class="post-time"> 2022-05-08 </span>
-      <div class="post-category">
-          <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/"> 服务器 </a>
-          </div>
-        <span class="more-meta"> 约 621 字 </span>
-        <span class="more-meta"> 预计阅读 2 分钟 </span>
-    </div>
-  </header>
-  
-  <div class="post-content">
-    <div class="post-summary">
-      购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce
-    </div>
-    <div class="read-more">
-      <a href="/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/" class="read-more-link">阅读更多</a>
-    </div>
-  </div>
-</article>
-
-    <article class="post">
-  <header class="post-header">
-    <h1 class="post-title"><a class="post-link" href="/post/%E5%90%8C%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E5%88%9B%E5%BB%BA%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E6%88%B7/">同一台电脑创建多个github账户</a></h1>
-    <div class="post-meta">
-      <span class="post-time"> 2021-12-04 </span>
-      <div class="post-category">
-          <a href="/categories/git/"> git </a>
-          </div>
-        <span class="more-meta"> 约 1101 字 </span>
-        <span class="more-meta"> 预计阅读 3 分钟 </span>
-    </div>
-  </header>
-  
-  <div class="post-content">
-    <div class="post-summary">
-      <p>通常我们会有一个工作的gitlab账户、还会有一个github私人账号用，或者有两个及以上的github账号，所以在同一台电脑上会存在多个<code>github</code>账户的情况，此时默认的githug配置不在生效，我们要先清除掉之前设置的全局<code>github 用户名和邮箱</code>。</p>
-    </div>
-    <div class="read-more">
-      <a href="/post/%E5%90%8C%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E5%88%9B%E5%BB%BA%E5%A4%9A%E4%B8%AAgithub%E8%B4%A6%E6%88%B7/" class="read-more-link">阅读更多</a>
     </div>
   </div>
 </article>

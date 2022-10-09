@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>手写miniVue3-01实现effect和reactive - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="手写miniVue3-01实现effect和reactive" />
+<meta property="og:description" content="mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-08T22:27:32+08:00" />
+<meta property="article:modified_time" content="2022-10-09T17:00:41+08:00" />
+
+<meta itemprop="name" content="手写miniVue3-01实现effect和reactive">
+<meta itemprop="description" content="mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip"><meta itemprop="datePublished" content="2022-10-08T22:27:32+08:00" />
+<meta itemprop="dateModified" content="2022-10-09T17:00:41+08:00" />
+<meta itemprop="wordCount" content="2383">
+<meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="手写miniVue3-01实现effect和reactive"/>
+<meta name="twitter:description" content="mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">手写miniVue3-01实现effect和reactive</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-10-08 </span>
+        <div class="post-category">
+            <a href="/categories/vue/"> vue </a>
+            </div>
+          <span class="more-meta"> 约 2383 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#mini-vue初始化">mini-vue初始化</a>
+      <ul>
+        <li><a href="#目录结构">目录结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#vue3基础概述">vue3基础概述</a>
+      <ul>
+        <li><a href="#实现reactive">实现<code>reactive</code></a></li>
+        <li><a href="#实现effect">实现<code>effect</code></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="mini-vue初始化">mini-vue初始化</h2>
+<p>本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖</p>
+<ol>
+<li>安装<code>typescript</code>，因为我们要用ts来实现，虽然只是轻量级ts体验，然后才能初始化<code>tsc --init</code>，生成tsconfig.json</li>
+<li>安装<code>jest</code>，做测试用</li>
+<li>安装jest配套使用的<code>babel</code>, 详见jest官网</li>
+<li>创建<code>babel.config.js</code></li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">presets</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s2">&#34;@babel/preset-env&#34;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">targets</span><span class="o">:</span> <span class="p">{</span> <span class="nx">node</span><span class="o">:</span> <span class="s2">&#34;current&#34;</span> <span class="p">}</span> <span class="p">}],</span>
+    <span class="s2">&#34;@babel/preset-typescript&#34;</span><span class="p">,</span>
+  <span class="p">],</span>
+<span class="p">};</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="4">
+<li>修改<code>tsconfig.json</code>，暂时先改这几个:</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="s2">&#34;target&#34;</span><span class="o">:</span> <span class="s2">&#34;es2016&#34;</span><span class="p">,</span> 
+<span class="s2">&#34;module&#34;</span><span class="o">:</span> <span class="s2">&#34;commonjs&#34;</span><span class="p">,</span> 
+<span class="s2">&#34;types&#34;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&#34;jest&#34;</span><span class="p">],</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>后面还会改很多……</p>
+<ol start="5">
+<li>缺啥依赖安装啥依赖</li>
+</ol>
+<h3 id="目录结构">目录结构</h3>
+<ol>
+<li>根目录下创建<code>src</code>目录，创建<code>reactivity</code>子目录，接着在<code>reactivity目录下</code>创建<code>test</code>子目录</li>
+<li>在test目录下创建<code>index.spec.ts</code>，写点东西测试一下<code>jest好用不</code></li>
+</ol>
+<h2 id="vue3基础概述">vue3基础概述</h2>
+<p>vue3有三大核心： reactivity 响应式模块、runtime 运行时模块（包括element初始化和更新）、compiler 编译模块。
+我们先从reactivity模块开始进行，也就是为什么我们需要创建一个<code>reactivity</code>目录。</p>
+<h3 id="实现reactive">实现<code>reactive</code></h3>
+<p><code>reactive</code>是响应式模块的基础的基础，也是有别于<code>vue2</code>的本质所在，我们实现的所有过程都是测试先行，先看看我们正常是怎么使用的，再去一步一步的实现它。</p>
+<ol>
+<li><code>reactivity目录</code>创建<code>reactive.ts</code>，<code>test目录</code>创建<code>reactive.spec.ts</code>，测试代码如下：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// reactive.spec.ts
+</span><span class="c1"></span><span class="kr">import</span> <span class="p">{</span> <span class="nx">reactive</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;../reactive&#34;</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s2">&#34;reactive&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">it</span><span class="p">(</span><span class="s2">&#34;happy path&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">origin</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="s1">&#39;foo&#39;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="kr">const</span> <span class="nx">observed</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">(</span><span class="nx">origin</span><span class="p">)</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">observed</span><span class="p">).</span><span class="nx">not</span><span class="p">.</span><span class="nx">toBe</span><span class="p">(</span><span class="nx">origin</span><span class="p">)</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">observed</span><span class="p">.</span><span class="nx">foo</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>根据这个测试代码的<code>happy path</code>，也就是所测试模块的核心流程，我们期望<code>reactive</code>函数，可以：</p>
+<ul>
+<li>使一个普通对象变成响应式的，并且和原来不相等</li>
+<li>能够正常访问原对象的属性值</li>
+</ul>
+<ol start="2">
+<li>代理对象，使用<code>proxy</code>来实现，最终会返回一个经过我们代理处理后的新的对象，很明显这两个不相等了就，一个基础版的<code>proxy</code>写法如下。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// reactive.ts
+</span><span class="c1"></span><span class="kd">function</span> <span class="nx">reactive</span><span class="p">(</span><span class="nx">raw</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nb">Proxy</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// 当我们获取值的时候触发这里getter处理器，通常用来收集依赖
+</span><span class="c1"></span>      <span class="nx">trigger</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="c1">// TODO 在effect中实现
+</span><span class="c1"></span>      <span class="c1">// proxy为什么要配合使用Reflect详见后面的分析
+</span><span class="c1"></span>      <span class="kr">const</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">Reflect</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+      <span class="k">return</span> <span class="nx">value</span>
+    <span class="p">},</span>
+    <span class="nx">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// 当我们设置时触发这里的setter处理器，触发上面收集到的依赖
+</span><span class="c1"></span>      <span class="nx">trigger</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="c1">// TODO 在effect中实现
+</span><span class="c1"></span>      <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">Reflect</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span>
+
+      <span class="k">return</span> <span class="nx">result</span>
+    <span class="p">},</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">reactive</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>以上是最基础的代理实现，但是我们还需要收集和触发依赖的逻辑，这就需要用到比较重要的一个概念<code>effect</code>，它是一个强大的副作用函数，可以实现依赖收集与触发等等其他复杂的操作。</p>
+<h3 id="实现effect">实现<code>effect</code></h3>
+<p>在<code>effect</code>中我们处理所有与依赖有关的操作，相当于是解耦了，响应的代理对象和依赖的操作，也是比较核心的一个模块。
+首先，我们要实现两个核心函数<code>收集track</code>和<code>触发trigger</code>，
+其次，我们要明白effect干了什么
+照旧，我们先看一下测试用例咋使用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">describe</span><span class="p">(</span><span class="s2">&#34;effect&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">it</span><span class="p">(</span><span class="s1">&#39;Happy path&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">origin</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span>
+      <span class="s1">&#39;age&#39;</span><span class="o">:</span> <span class="mi">10</span>
+    <span class="p">})</span>
+
+    <span class="kd">let</span> <span class="nx">nextAge</span>
+    <span class="nx">effect</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">nextAge</span> <span class="o">=</span> <span class="nx">origin</span><span class="p">.</span><span class="nx">age</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="p">})</span>
+
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">nextAge</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+
+    <span class="nx">origin</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">origin</span><span class="p">.</span><span class="nx">age</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">nextAge</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+  <span class="p">});</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>可以知道：</p>
+<ol>
+<li>effect中的回调会触发收集依赖，并会被立刻执行一次</li>
+<li>当回调中的关联的响应式对象的值改变时，会重新触发以来执行，也就是再次执行effect中传递的回调函数</li>
+</ol>
+<p>接下来<code>src/reactivity</code>目录下创建<code>effect.ts</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.ts
+</span><span class="c1">// 这是所谓的依赖的核心
+</span><span class="c1"></span><span class="kr">class</span> <span class="nx">ReactiveEffect</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">_fn</span><span class="o">:</span> <span class="nx">any</span>
+  <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span> <span class="o">=</span> <span class="nx">fn</span>
+  <span class="p">}</span>
+  <span class="nx">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// 这个函数会执行传递的fn，并把当前this赋值给全局activeEffect
+</span><span class="c1"></span>    <span class="nx">activeEffect</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// 全局的对象来收集依赖，其实就是ReactiveEffect对象
+</span><span class="c1"></span><span class="kd">let</span> <span class="nx">activeEffect</span>
+
+<span class="kd">function</span> <span class="nx">effect</span> <span class="p">(</span><span class="nx">fn</span><span class="o">:</span> <span class="nb">Function</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//为了更好的处理fn相关逻辑，需要一个reactiveEffect类 做抽象
+</span><span class="c1"></span>  <span class="kr">const</span> <span class="nx">_effect</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactiveEffect</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span>
+  <span class="nx">_effect</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">effect</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>以上就实现了effect中的回调会被立刻执行一次，接下来分析依赖收集与触发，先看我们怎么定义依赖存储的数据结构
+我们现在有三级关系需要处理，对应的需要三个数据结构来存储：
+<code>target(原始对象) -&gt; key(原始对象的key) -&gt; deps(依赖对象，即上面的activeEffect全局对象)</code></p>
+<ol>
+<li>对于<code>target -&gt; key</code>的关系我们只能使用<code>Map或者WeakMap</code>数据结构来存储，这两种数据结构的key可以是对象，但<code>WeakMap</code>得key只能是对象，而普通<code>object</code>的<code>key</code>只能是<code>string</code>或者<code>Symbol</code>，</li>
+<li>第一层<code>map</code>的<code>value</code>是代表<code>key -&gt; deps</code>的关系，也必须要用<code>map</code>来存储</li>
+<li>对于<code>deps</code>来说，存在多个依赖但是必须不能重复，我们直接使用<code>Set</code>数据结构存储。
+以上就是三层数据结构的选择，用一个简图描述的话就是：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="p">{</span>
+  <span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="o">:</span> <span class="nx">foo</span><span class="p">,</span> <span class="s1">&#39;foo2&#39;</span><span class="o">:</span> <span class="nx">foo2</span><span class="p">}</span> <span class="o">:</span> <span class="p">{</span>
+    <span class="s1">&#39;foo&#39;</span><span class="o">:</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">(...),</span>
+    <span class="s1">&#39;foo2&#39;</span><span class="o">:</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">(...),</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>简单概括来说就是：</p>
+<ul>
+<li>target是一个简单对象<code>{'foo': foo, 'foo2': foo2}</code>,作为第一个map的key</li>
+<li>value是第二个map，简单对象的key作为这个map的key</li>
+<li>第二个map的value就是存储<code>activeEffect全局对象</code>的set</li>
+</ul>
+<p>现在我们可以实现<code>track</code>函数了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.ts
+</span><span class="c1"></span>
+<span class="c1">// 构建第一层Map，最外层的全局变量
+</span><span class="c1"></span><span class="kd">let</span> <span class="nx">targetMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">()</span>
+<span class="kd">function</span> <span class="nx">track</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">depsMap</span> <span class="o">=</span> <span class="nx">targetMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">depsMap</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 构建第2层Map
+</span><span class="c1"></span>    <span class="nx">depsMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">()</span>
+    <span class="nx">targetMap</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">depsMap</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="kd">let</span> <span class="nx">depsSet</span> <span class="o">=</span> <span class="nx">depsMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">depsSet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 构建第3层Set
+</span><span class="c1"></span>    <span class="nx">depsSet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">()</span>
+    <span class="nx">depsSet</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">depsSet</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="nx">depsSet</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">activeEffect</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>收集完依赖后，我们触发依赖时就是三层层层递进的去获取<code>activeEffect</code>，并最终执行这个实例上的run方法，就相当于再次执行了<code>effect中的fn</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.ts
+</span><span class="c1"></span>
+<span class="kd">function</span> <span class="nx">trigger</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">depsMap</span> <span class="o">=</span> <span class="nx">targetMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span>
+  <span class="c1">// 如果这里都找不到第二层的依赖Map肯定是前面逻辑有问题
+</span><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">depsMap</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringfy</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="nx">的依赖找不到</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="kr">const</span> <span class="nx">depsSet</span> <span class="o">=</span> <span class="nx">depsMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+  <span class="c1">// 遍历set，执行存储的activeEffect的run方法
+</span><span class="c1"></span>  <span class="k">for</span><span class="p">(</span><span class="kd">let</span> <span class="nx">activeEffect</span> <span class="k">of</span> <span class="nx">depsSet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">activeEffect</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-10-09
+        <a href="/commit/4b3a9d29ce2002678eb541d77cd47ba47954315f" title="What:">(4b3a9d2)</a>
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/vue3/">vue3</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">手写miniVue3-02实现effect的runner-scheduler-stop功能</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
+            <span class="next-text nav-default">后台管理系统性能优化</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

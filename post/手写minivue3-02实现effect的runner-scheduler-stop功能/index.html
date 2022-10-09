@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>手写miniVue3-02实现effect的runner-scheduler-stop功能 - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="手写miniVue3-02实现effect的runner-scheduler-stop功能" />
+<meta property="og:description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-09T11:58:26+08:00" />
+<meta property="article:modified_time" content="2022-10-09T17:00:41+08:00" />
+
+<meta itemprop="name" content="手写miniVue3-02实现effect的runner-scheduler-stop功能">
+<meta itemprop="description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用"><meta itemprop="datePublished" content="2022-10-09T11:58:26+08:00" />
+<meta itemprop="dateModified" content="2022-10-09T17:00:41+08:00" />
+<meta itemprop="wordCount" content="2150">
+<meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="手写miniVue3-02实现effect的runner-scheduler-stop功能"/>
+<meta name="twitter:description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">手写miniVue3-02实现effect的runner-scheduler-stop功能</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-10-09 </span>
+        <div class="post-category">
+            <a href="/categories/vue/"> vue </a>
+            </div>
+          <span class="more-meta"> 约 2150 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#实现effect的runner">实现<code>effect</code>的<code>runner</code></a></li>
+    <li><a href="#实现effect的scheduler">实现<code>effect</code>的<code>scheduler</code></a></li>
+    <li><a href="#实现effect的stop">实现<code>effect</code>的<code>stop</code></a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="实现effect的runner">实现<code>effect</code>的<code>runner</code></h2>
+<p>前面<a href="https://vvushaolin.com/post/mini-vue3%E5%AE%9E%E7%8E%B0-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">一节</a>，已经实现了基础版的<code>reactive</code>和<code>effect</code>，但是vue3的<code>effect</code>实际上还有另外三种副作用，分别是<code>runner scheduler stop</code>，我们首先来实现<code>runner</code>。
+先看一个测试用例新增内容：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.spec.ts 新增
+</span><span class="c1"></span><span class="nx">it</span><span class="p">(</span><span class="s2">&#34;should return runner when call effect&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// effect 执行完应该返回一个runner
+</span><span class="c1"></span>  <span class="c1">// runner执行的时候会重新执行run函数
+</span><span class="c1"></span>  <span class="c1">// 这个runner执行传进去的fn,并返回fn执行完的值
+</span><span class="c1"></span>  <span class="kd">let</span> <span class="nx">foo</span> <span class="o">=</span> <span class="mi">1</span>
+
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">effect</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">foo</span><span class="o">++</span>
+    <span class="k">return</span> <span class="nx">foo</span>
+  <span class="p">})</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">foo</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+  <span class="nx">runner</span><span class="p">()</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">foo</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">runner</span><span class="p">()).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>通过测试用例很明显可以发现：</p>
+<ol>
+<li>effect函数有一个返回值，也是所谓的runner函数</li>
+<li>runner函数再次执行，又会执行effect传入的fn函数，并且能够返回fn函数的返回值，也就是说会再次执行run函数，但是run是属于<code>reactiveEffect的实例方法</code>， 所以我们首先要给runner绑定this为effect中new出来的<code>那个reactiveEffect实例</code></li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.ts 
+</span><span class="c1"></span>
+<span class="kr">class</span> <span class="nx">ReactiveEffect</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">_fn</span><span class="o">:</span> <span class="nx">any</span>
+  <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span> <span class="o">=</span> <span class="nx">fn</span>
+  <span class="p">}</span>
+
+  <span class="nx">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">activeEffect</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="c1">// 执行runner其实就是执行传进来的fn，并返回他的返回值
+</span><span class="c1"></span>    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">effect</span><span class="p">(</span><span class="nx">fn</span><span class="o">:</span> <span class="nb">Function</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">_effect</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactiveEffect</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span>
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">_effect</span><span class="p">.</span><span class="nx">run</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">_effect</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="nx">runner</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="实现effect的scheduler">实现<code>effect</code>的<code>scheduler</code></h2>
+<p><code>scheduler</code>调度器是一个很重要的副作用，可以在其中做一些其他的操作，它是effect
+的第二个参数<code>options</code>，先看新增的测试用例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.spec.ts
+</span><span class="c1"></span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;could have a scheduler when call effect&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// 1. effect可以接受一个options
+</span><span class="c1"></span>  <span class="c1">// 2. options中有一个函数scheduler
+</span><span class="c1"></span>  <span class="c1">// 3. 第一次effect默认执行run函数，但是scheduler不执行
+</span><span class="c1"></span>  <span class="c1">// 4. 响应式数据 update后 不会执行run函数了，只会触发 scheduler 一次
+</span><span class="c1"></span>  <span class="c1">// 5. 手动run之后，数据才会真正更新
+</span><span class="c1"></span>  <span class="kd">let</span> <span class="nx">dummy</span>
+  <span class="kd">let</span> <span class="nx">run</span><span class="o">:</span> <span class="nx">any</span>
+  <span class="kr">const</span> <span class="nx">scheduler</span> <span class="o">=</span> <span class="nx">jest</span><span class="p">.</span><span class="nx">fn</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">run</span> <span class="o">=</span> <span class="nx">runner</span>
+  <span class="p">})</span>
+  <span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span>
+    <span class="s1">&#39;foo&#39;</span><span class="o">:</span> <span class="mi">1</span>
+  <span class="p">})</span>
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">effect</span><span class="p">(</span>
+    <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">dummy</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">foo</span>
+    <span class="p">},</span>
+    <span class="p">{</span> <span class="nx">scheduler</span> <span class="p">}</span>
+  <span class="p">)</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">scheduler</span><span class="p">).</span><span class="nx">not</span><span class="p">.</span><span class="nx">toHaveBeenCalled</span><span class="p">()</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="c1">// 响应式数据更新后，scheduler才调用1次
+</span><span class="c1"></span>  <span class="nx">obj</span><span class="p">.</span><span class="nx">foo</span><span class="o">++</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">scheduler</span><span class="p">).</span><span class="nx">toHaveBeenCalledTimes</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="c1">// 数值没有更新
+</span><span class="c1"></span>  <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="c1">// 手动run后数据才更新
+</span><span class="c1"></span>  <span class="nx">run</span><span class="p">()</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>可以发现这个<code>scheduler</code>有以下特点：</p>
+<ol>
+<li>属于<code>effect</code>的第二个形参</li>
+<li>第一次effect默认执行run函数，但是scheduler不执行</li>
+<li>响应式数据 update后 不会执行run函数了，只会触发 scheduler 一次，也就是在trigger中修改</li>
+<li>手动run之后，数据才会真正更新</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.ts 修改如下
+</span><span class="c1"></span><span class="kr">class</span> <span class="nx">ReactiveEffect</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">_fn</span><span class="o">:</span> <span class="nx">any</span>
+  <span class="kr">public</span> <span class="nx">scheduler</span><span class="o">:</span> <span class="nx">any</span>
+  <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">scheduler</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span> <span class="o">=</span> <span class="nx">fn</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">scheduler</span> <span class="o">=</span> <span class="nx">scheduler</span>
+  <span class="p">}</span>
+
+  <span class="nx">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">activeEffect</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">trigger</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">depsMap</span> <span class="o">=</span> <span class="nx">targetMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">depsMap</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringfy</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span><span class="si">}</span><span class="sb">找不到相关依赖`</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="kr">const</span> <span class="nx">depsSet</span> <span class="o">=</span> <span class="nx">depsMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+  <span class="k">for</span><span class="p">(</span><span class="kr">const</span> <span class="nx">activeEffect</span> <span class="k">of</span> <span class="nx">depsSet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">activeEffect</span><span class="p">.</span><span class="nx">scheduler</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">activeEffect</span><span class="p">.</span><span class="nx">scheduler</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">activeEffect</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">effect</span><span class="p">(</span><span class="nx">fn</span><span class="o">:</span> <span class="nb">Function</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">{</span> <span class="nx">scheduler</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">options</span>
+  <span class="kr">const</span> <span class="nx">_effect</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactiveEffect</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">scheduler</span><span class="p">)</span>
+
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">_effect</span><span class="p">.</span><span class="nx">run</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">_effect</span><span class="p">)</span>
+  <span class="k">return</span> <span class="nx">runner</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="实现effect的stop">实现<code>effect</code>的<code>stop</code></h2>
+<p>effect中可以停止effect的执行，先看一下新增的测试用例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.spec.ts
+</span><span class="c1"></span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should have a stop function when call effect&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">dummy</span>
+  <span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span>
+    <span class="s1">&#39;foo&#39;</span><span class="o">:</span> <span class="mi">1</span>
+  <span class="p">})</span>
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">effect</span><span class="p">(</span>
+    <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">dummy</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">foo</span>
+    <span class="p">},</span>
+  <span class="p">)</span>
+  <span class="nx">obj</span><span class="p">.</span><span class="nx">foo</span> <span class="o">=</span> <span class="mi">2</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+  <span class="c1">// stop是可以阻止更新runner执行的，即清理掉effect
+</span><span class="c1"></span>  <span class="nx">stop</span><span class="p">(</span><span class="nx">runner</span><span class="p">)</span>
+  <span class="nx">obj</span><span class="p">.</span><span class="nx">foo</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+  <span class="nx">runner</span><span class="p">()</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="p">});</span>
+<span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should have a onstop function when call effect&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">dummy</span>
+  <span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span>
+    <span class="s1">&#39;foo&#39;</span><span class="o">:</span> <span class="mi">1</span>
+  <span class="p">})</span>
+  <span class="kr">const</span> <span class="nx">onStop</span> <span class="o">=</span> <span class="nx">jest</span><span class="p">.</span><span class="nx">fn</span><span class="p">()</span>
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">effect</span><span class="p">(</span>
+    <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">dummy</span> <span class="o">=</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">foo</span>
+    <span class="p">},</span>
+    <span class="p">{</span> <span class="nx">onStop</span> <span class="p">}</span>
+  <span class="p">)</span>
+  <span class="c1">// stop触发时，可以接受onStop的回调
+</span><span class="c1"></span>  <span class="nx">stop</span><span class="p">(</span><span class="nx">runner</span><span class="p">)</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">onStop</span><span class="p">).</span><span class="nx">toBeCalledTimes</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>通过分析测试用例，可以知道：</p>
+<ol>
+<li>effect的stop就是要清理掉对应的effect，它接受一个runner作为参数，所以我们可以为runner对象把绑定this的那个effect绑定为一个新属性</li>
+<li>更为合理的就是 stop执行是就是执行上面runner对象新增的effect的stop方法，也就是为ReactiveEffect类新增方法</li>
+<li>为了能收集到所有的deps中的effect，要在track时反向收集activeEffect到ReactiveEffec类中</li>
+<li>effect的第二个形参，还可以接受stop的监听<code>onStop</code></li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// effect.ts 修改如下
+</span><span class="c1"></span><span class="kr">class</span> <span class="nx">ReactiveEffect</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">_fn</span><span class="o">:</span> <span class="nx">any</span>
+  <span class="kr">public</span> <span class="nx">scheduler</span><span class="o">:</span> <span class="nx">any</span>
+
+  <span class="nx">onStop</span><span class="o">?:</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="k">void</span> <span class="c1">// stop的回调
+</span><span class="c1"></span>  <span class="nx">deps</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">//反向存储所有依赖
+</span><span class="c1"></span>  <span class="nx">isActive</span> <span class="o">=</span> <span class="kc">true</span> <span class="c1">// stop执行的标志，不能反复stop
+</span><span class="c1"></span>
+  <span class="nx">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">scheduler</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span> <span class="o">=</span> <span class="nx">fn</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">scheduler</span> <span class="o">=</span> <span class="nx">scheduler</span>
+  <span class="p">}</span>
+
+  <span class="nx">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">activeEffect</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">()</span>
+  <span class="p">}</span>
+
+  <span class="nx">stop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">isActive</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">cleanEffect</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+      <span class="c1">// 如果传递了stop的监听函数，则在这里执行
+</span><span class="c1"></span>      <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">onStop</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="k">this</span><span class="p">.</span><span class="nx">onStop</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">onStop</span><span class="p">()</span>
+      <span class="p">}</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">isActive</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">cleanEffect</span><span class="p">(</span><span class="nx">effect</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// 在trigger中为其挂载的deps
+</span><span class="c1"></span>  <span class="nx">effect</span><span class="p">.</span><span class="nx">deps</span><span class="p">.</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">dep</span><span class="o">:</span> <span class="nx">any</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="c1">// dep就是那个set
+</span><span class="c1"></span>    <span class="nx">dep</span><span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="nx">effect</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nx">targetMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">()</span>
+<span class="kd">function</span> <span class="nx">track</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">depsMap</span> <span class="o">=</span> <span class="nx">targetMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">depsMap</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">depsMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">()</span>
+    <span class="nx">targetMap</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">depsMap</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="kd">let</span> <span class="nx">depsSet</span> <span class="o">=</span> <span class="nx">depsMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">depsSet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">depsSet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">()</span>
+    <span class="nx">depsMap</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">depsSet</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="c1">//加上异常处理
+</span><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">activeEffect</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="sb">`activeEffect: </span><span class="si">${</span><span class="nx">activeEffect</span><span class="si">}</span><span class="sb">`</span><span class="nx">不存在</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="nx">depsSet</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">activeEffect</span><span class="p">)</span>
+  <span class="c1">// 把第三层Set直接添加到activeEffect的deps属性里
+</span><span class="c1"></span>  <span class="nx">activeEffect</span><span class="p">.</span><span class="nx">deps</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">depsSet</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">effect</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{})</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">_effect</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactiveEffect</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span>
+  <span class="c1">// options对象可能有很多属性，直接聚合到_effect对象上
+</span><span class="c1"></span>  <span class="nx">extend</span><span class="p">(</span><span class="nx">_effect</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span>
+
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">_effect</span><span class="p">.</span><span class="nx">run</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">_effect</span><span class="p">)</span>
+  <span class="c1">// 为runner增加新属性effect，这样下面的全局stop函数就能正确使用effect了
+</span><span class="c1"></span>  <span class="nx">runner</span><span class="p">.</span><span class="nx">effect</span> <span class="o">=</span> <span class="nx">_effect</span>
+  <span class="k">return</span> <span class="nx">runner</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">stop</span><span class="p">(</span><span class="nx">runner</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">runner</span><span class="p">.</span><span class="nx">effect</span><span class="p">.</span><span class="nx">stop</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>可以看到上面有个新增的extend函数，这个是全局工具类，在<code>src</code>下创建shared目录，创建<code>index.ts</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// src/shared/index.ts
+</span><span class="c1"></span>
+<span class="kr">const</span> <span class="nx">extend</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">extend</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-10-09
+        <a href="/commit/4b3a9d29ce2002678eb541d77cd47ba47954315f" title="What:">(4b3a9d2)</a>
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/vue3/">vue3</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">手写miniVue3-03实现readonly并重构响应式模块</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">
+            <span class="next-text nav-default">手写miniVue3-01实现effect和reactive</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

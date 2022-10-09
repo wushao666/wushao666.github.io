@@ -6,13 +6,31 @@
     <description>Recent content in vue on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Sat, 08 Oct 2022 22:27:32 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/categories/vue/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 09 Oct 2022 14:59:45 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/categories/vue/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>01-vue3实现effect和reactive</title>
-      <link>http://wushao666.github.io/post/mini-vue3%E5%AE%9E%E7%8E%B0-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</link>
+      <title>手写miniVue3-03实现readonly并重构响应式模块</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</link>
+      <pubDate>Sun, 09 Oct 2022 14:59:45 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</guid>
+      <description>重构reactive 本来我们应该直接实现readonly模块的，但是其实它本质上和reactive很像，只不过它是只读的，不能set，set</description>
+    </item>
+    
+    <item>
+      <title>手写miniVue3-02实现effect的runner-scheduler-stop功能</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</link>
+      <pubDate>Sun, 09 Oct 2022 11:58:26 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</guid>
+      <description>实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用</description>
+    </item>
+    
+    <item>
+      <title>手写miniVue3-01实现effect和reactive</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</link>
       <pubDate>Sat, 08 Oct 2022 22:27:32 +0800</pubDate>
       
-      <guid>http://wushao666.github.io/post/mini-vue3%E5%AE%9E%E7%8E%B0-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</guid>
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</guid>
       <description>mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip</description>
     </item>
     
