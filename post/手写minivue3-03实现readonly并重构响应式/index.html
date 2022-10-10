@@ -49,7 +49,7 @@
 <meta itemprop="name" content="手写miniVue3-03实现readonly并重构响应式模块">
 <meta itemprop="description" content="重构reactive 本来我们应该直接实现readonly模块的，但是其实它本质上和reactive很像，只不过它是只读的，不能set，set"><meta itemprop="datePublished" content="2022-10-09T14:59:45+08:00" />
 <meta itemprop="dateModified" content="2022-10-09T17:00:41+08:00" />
-<meta itemprop="wordCount" content="837">
+<meta itemprop="wordCount" content="849">
 <meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="手写miniVue3-03实现readonly并重构响应式模块"/>
 <meta name="twitter:description" content="重构reactive 本来我们应该直接实现readonly模块的，但是其实它本质上和reactive很像，只不过它是只读的，不能set，set"/>
@@ -136,7 +136,7 @@
         <div class="post-category">
             <a href="/categories/vue/"> vue </a>
             </div>
-          <span class="more-meta"> 约 837 字 </span>
+          <span class="more-meta"> 约 849 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         
       </div>
@@ -331,7 +331,7 @@
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="实现readonly">实现<code>readonly</code></h2>
-<p>其实经过上面的重构，我们已经实现完了<code>readonly</code>。而且后期我们实现新的代理会变的很容易，直接增加对应的<code>baseHandler</code>即可，先看一下测试用例的用法：</p>
+<p>其实经过上面的重构，我们已经实现完了<code>readonly()</code>，它是响应式核心之一。而且后期我们实现新的代理会变的很容易，直接增加对应的<code>baseHandler</code>即可，先看一下测试用例的用法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
