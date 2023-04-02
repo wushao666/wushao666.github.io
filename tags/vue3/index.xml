@@ -6,13 +6,22 @@
     <description>Recent content in vue3 on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Mon, 10 Oct 2022 14:31:28 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/tags/vue3/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 10 Oct 2022 20:03:54 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/tags/vue3/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>手写miniVue3-06实现ref、isRef、UnRef</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunref/</link>
+      <title>手写miniVue3-07实现computed</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</link>
+      <pubDate>Mon, 10 Oct 2022 20:03:54 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</guid>
+      <description>实现computed 本节实现computed()，先看测试用例： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38</description>
+    </item>
+    
+    <item>
+      <title>手写miniVue3-06实现ref、isRef、unRef、proxyRefs</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</link>
       <pubDate>Mon, 10 Oct 2022 14:31:28 +0800</pubDate>
       
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunref/</guid>
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</guid>
       <description>实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue</description>
     </item>
     

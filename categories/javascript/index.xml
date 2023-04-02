@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JavaScript on 吴少在Coding</title>
+    <link>http://wushao666.github.io/categories/javascript/</link>
+    <description>Recent content in JavaScript on 吴少在Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Wed, 16 Nov 2022 18:51:22 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/categories/javascript/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Javascript中的异步问题</title>
+      <link>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</link>
+      <pubDate>Wed, 16 Nov 2022 18:51:22 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</guid>
+      <description>今天我们来聊一聊 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。 这</description>
+    </item>
+    
+  </channel>
+</rss>
