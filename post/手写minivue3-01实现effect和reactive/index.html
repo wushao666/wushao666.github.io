@@ -44,11 +44,11 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-10-08T22:27:32+08:00" />
-<meta property="article:modified_time" content="2022-10-09T17:00:41+08:00" />
+<meta property="article:modified_time" content="2024-11-24T14:46:48+08:00" />
 
 <meta itemprop="name" content="手写miniVue3-01实现effect和reactive">
 <meta itemprop="description" content="mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip"><meta itemprop="datePublished" content="2022-10-08T22:27:32+08:00" />
-<meta itemprop="dateModified" content="2022-10-09T17:00:41+08:00" />
+<meta itemprop="dateModified" content="2024-11-24T14:46:48+08:00" />
 <meta itemprop="wordCount" content="2383">
 <meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="手写miniVue3-01实现effect和reactive"/>
@@ -295,7 +295,7 @@
   <span class="k">return</span> <span class="k">new</span> <span class="nb">Proxy</span><span class="p">(</span><span class="nx">raw</span><span class="p">,</span> <span class="p">{</span>
     <span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
       <span class="c1">// 当我们获取值的时候触发这里getter处理器，通常用来收集依赖
-</span><span class="c1"></span>      <span class="nx">trigger</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="c1">// TODO 在effect中实现
+</span><span class="c1"></span>      <span class="nx">track</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="c1">// TODO 在effect中实现
 </span><span class="c1"></span>      <span class="c1">// proxy为什么要配合使用Reflect详见后面的分析
 </span><span class="c1"></span>      <span class="kr">const</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">Reflect</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
       <span class="k">return</span> <span class="nx">value</span>
@@ -555,8 +555,8 @@
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-        2022-10-09
-        <a href="/commit/4b3a9d29ce2002678eb541d77cd47ba47954315f" title="What:">(4b3a9d2)</a>
+        2024-11-24
+        <a href="/commit/60efdc0add9c86548c530f7f419af910b3dc575b" title="What: feat：更新代码">(60efdc0)</a>
     </span>
   </p>
   
@@ -615,7 +615,7 @@
   <span class="copyright-year">
     &copy; 
     2017 - 
-    2023<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+    2024<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
   </span>
 </div>
 
