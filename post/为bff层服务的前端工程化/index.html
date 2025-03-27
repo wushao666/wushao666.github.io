@@ -44,12 +44,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/%E4%B8%BAbff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2025-03-26T10:35:43+08:00" />
-<meta property="article:modified_time" content="2025-03-26T10:35:43+08:00" />
+<meta property="article:modified_time" content="2025-03-27T16:17:13+08:00" />
 
 <meta itemprop="name" content="为BFF层服务的前端工程化">
 <meta itemprop="description" content="本节是为了BFF层设计的前端基建内容，在做前端基建之前，还是要再次复习一下我们之前的BFF服务端架构设计，方便我们更好的配合它做基建。 这套工"><meta itemprop="datePublished" content="2025-03-26T10:35:43+08:00" />
-<meta itemprop="dateModified" content="2025-03-26T10:35:43+08:00" />
-<meta itemprop="wordCount" content="11753">
+<meta itemprop="dateModified" content="2025-03-27T16:17:13+08:00" />
+<meta itemprop="wordCount" content="11788">
 <meta itemprop="keywords" content="BFF层," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="为BFF层服务的前端工程化"/>
 <meta name="twitter:description" content="本节是为了BFF层设计的前端基建内容，在做前端基建之前，还是要再次复习一下我们之前的BFF服务端架构设计，方便我们更好的配合它做基建。 这套工"/>
@@ -136,7 +136,7 @@
         <div class="post-category">
             <a href="/categories/bff/"> BFF </a>
             </div>
-          <span class="more-meta"> 约 11753 字 </span>
+          <span class="more-meta"> 约 11788 字 </span>
           <span class="more-meta"> 预计阅读 24 分钟 </span>
         
       </div>
@@ -151,16 +151,12 @@
     <li><a href="#前端工程化">前端工程化</a>
       <ul>
         <li><a href="#解析编译">解析编译</a></li>
-        <li><a href="#水合的概念">水合的概念</a></li>
-        <li><a href="#水合信息的含义">水合信息的含义</a></li>
-        <li><a href="#示例代码解释">示例代码解释</a></li>
-        <li><a href="#禁用生产环境显示水合信息的原因">禁用生产环境显示水合信息的原因</a></li>
         <li><a href="#模块分包">👍模块分包</a></li>
-        <li><a href="#生产环境的优化">👍🏻生产环境的优化</a></li>
+        <li><a href="#生产环境的优化">👍🏻👍🏻👍🏻生产环境的优化</a></li>
         <li><a href="#减小-webpack-打包体积">减小 Webpack 打包体积</a></li>
       </ul>
     </li>
-    <li><a href="#-通用优化思路">👍🏻 通用优化思路</a>
+    <li><a href="#通用优化思路">👍🏻👍🏻👍🏻通用优化思路</a>
       <ul>
         <li><a href="#1性能优化直接影响用户体验">1、性能优化（直接影响用户体验）</a></li>
         <li><a href="#2构建优化开发体验优化">2、构建优化（开发体验优化）</a></li>
@@ -187,25 +183,27 @@
 <p>这套工程化是根据当前的BFF需求（下图所示）而设计的。
 <img src="/images/nova-bff/BFF-structure.png" alt="nova-core">
 这套架构提供统一的入口，通过多页面入口来分发不同的系统（应用）。</p>
-<p>本文内容较长，核心内容使用👍🏻（👍）的标志标注，补充说明某个概念使用双分割线包裹。</p>
+<p><strong>本文内容较长，核心内容使用👍🏻（👍）的标志标注，补充说明某个概念使用双分割线包裹。</strong></p>
 <h2 id="这一节要干啥">这一节要干啥</h2>
 <p>设计BFF是想解耦纯后端和页面访问，BFF层做一部分请求的工作，更好的服务页面的接口需求。
 而上一章节的服务端设计，是通过封装koa，实现了一套egg.js的架构。用一系列的中间件、loader去实现bff层的底座。
 <img src="/images/nova-bff/nova-core-structure.png" alt="nova-core"></p>
-<p>仔细看bff层的业务逻辑中的核心有一个页面模版，也就是我们koa-core要去访问、解析tpl文件，展示层在通过koa-router的路由访问对应的页面。
-而这里的模版就是我们本节要去实现的，它必然是动态生成的。要把/app/pages下的对应页面解析成对应的页面模版。
-<img src="/images/nova-bff/1742982008281.jpg" alt="nova-core">
-但是实际开发中我们会有很多资源依赖，可能会用react或者vue开发，可能会用less\sass。
-所以要用打包工具去处理。
-这一节会做两件事：
-1、前端工程化
-2、为了让开发过程更加高效，做一部分前端基础建设。
-综上所述，这一节要完成下图中间部分：
+<p>仔细看bff层的业务逻辑中的核心有一个页面模版，也就是我们koa-core要去访问、解析tpl文件，展示层在通过koa-router的路由访问对应的页面。</p>
+<p>而这里的模版就是我们本节要去实现的，它必然是动态生成的。要把/app/pages下的对应页面解析成对应的页面模版。
+<img src="/images/nova-bff/1742982008281.jpg" alt="nova-core"></p>
+<p>但是实际开发中我们会有很多资源依赖，可能会用react或者vue开发，可能会用less\sass。
+所以要用打包工具去处理。</p>
+<p>这一节会做两件事：</p>
+<ol>
+<li>前端工程化</li>
+<li>为了让开发过程更加高效，做一部分前端基础建设。</li>
+</ol>
+<p>综上所述，这一节要完成下图中间部分：
 <img src="/images/nova-bff/webpack.png" alt="webpack">
 当做完解析后，输出的产物，koa服务端就可以直接访问了。</p>
 <h2 id="前端工程化">前端工程化</h2>
-<p>前端工程化主要打包工具来实现，至于你用vite还是webpack，还是xxx，都不重要，重要的是从工程化的思路去处理，不同环境下该做什么，每种情况处理的逻辑基本都是相通的。
-我选了webpack5来实践。
+<p>前端工程化主要打包工具来实现，至于你用vite还是webpack，还是xxx，都不重要，重要的是从工程化的思路去处理，不同环境下该做什么，每种情况处理的逻辑基本都是相通的。</p>
+<p>我选了webpack5来实践。
 在回顾一下这张图：<img src="/images/nova-bff/webpack.png" alt="webpack">
 解析引擎要做三件事：</p>
 <ol>
@@ -313,8 +311,7 @@
 </code></pre></td></tr></table>
 </div>
 </div><hr>
-<p>解析编译的前两步的一些基础操作，开发环境和生成环境都需要，可以使用base.js来抽象，至于产物，生产和开发环境差别很大，要单独处理。
-上面主要讲了module处理阶段。</p>
+<p>解析编译的前两步的一些基础操作，开发环境和生成环境都需要，可以使用base.js来抽象，至于产物，生产和开发环境差别很大，要单独处理。</p>
 <p>在最终的构建阶段会通过配置插件，在打包的不同生命周期中生效，去改变打包的结果，例如要生成html或者tpl</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -369,19 +366,20 @@
 </code></pre></td></tr></table>
 </div>
 </div><hr>
-<p>在 Vue 和 React 这类前端框架里，“水合”（Hydration）是个关键概念，“水合信息”就和水合过程产生的数据或者状态有关。下面为你详细阐述：</p>
-<h3 id="水合的概念">水合的概念</h3>
-<p>在服务器端渲染（SSR）或者静态站点生成（SSG）的场景中，服务端先把 HTML 渲染好，然后发送到客户端。客户端拿到这些 HTML 后，要把它变成可交互的应用程序，这个过程就是水合。简单来说，水合就是把静态的 HTML 和框架里的 JavaScript 代码关联起来，让页面具有交互性。</p>
-<h3 id="水合信息的含义">水合信息的含义</h3>
-<p>水合信息指的是在水合过程中用到的、和组件状态、事件监听器等相关的数据。具体包含以下内容：</p>
+<p>可以看到插件中：<code>__VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false', // 禁用生产环境显示水合信息</code>
+在 Vue 和 React 这类前端框架里，“水合”（Hydration）是个关键概念，“水合信息”就和水合过程产生的数据或者状态有关。</p>
+<p><strong>水合的概念</strong>
+在服务器端渲染（SSR）或者静态站点生成（SSG）的场景中，服务端先把 HTML 渲染好，然后发送到客户端。客户端拿到这些 HTML 后，要把它变成可交互的应用程序，这个过程就是水合。</p>
+<p>简单来说，水合就是把静态的 HTML 和框架里的 JavaScript 代码关联起来，让页面具有交互性。</p>
+<p><strong>水合信息的本质</strong>：
+水合信息指的是在水合过程中用到的、和组件状态、事件监听器等相关的数据。具体包含以下内容：</p>
 <ul>
 <li><strong>组件状态</strong>：像组件里的变量、数据这些状态信息。在水合的时候，客户端要把这些状态恢复到和服务端渲染时一样的状态。</li>
 <li><strong>事件监听器</strong>：比如 <code>click</code>、<code>input</code> 这类事件的监听器。水合过程会把这些事件监听器添加到对应的 DOM 元素上，这样页面才能响应用户的操作。</li>
 <li><strong>生命周期钩子</strong>：组件的生命周期钩子函数在水合的时候会被触发，从而保证组件能正确地初始化和渲染。</li>
 </ul>
-<h3 id="示例代码解释">示例代码解释</h3>
 <p>下面是 Vue 和 React 中关于水合的简单示例代码：</p>
-<h4 id="vue-示例">Vue 示例</h4>
+<p>Vue 示例</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -429,7 +427,7 @@
 </code></pre></td></tr></table>
 </div>
 </div><p>在 Vue 的 SSR 中，服务端会渲染出初始的 HTML，包含 <code>count</code> 的初始值 <code>0</code>。客户端进行水合时，会恢复 <code>count</code> 的状态，并且给按钮添加 <code>click</code> 事件监听器，这样点击按钮就能更新 <code>count</code> 的值。</p>
-<h4 id="react-示例">React 示例</h4>
+<p>React 示例</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -463,7 +461,7 @@
 </code></pre></td></tr></table>
 </div>
 </div><p>在 React 的 SSR 里，服务端会渲染出初始的 HTML，客户端水合时会恢复 <code>count</code> 的状态，同时给按钮添加 <code>onClick</code> 事件监听器，让按钮可以正常响应点击事件。</p>
-<h3 id="禁用生产环境显示水合信息的原因">禁用生产环境显示水合信息的原因</h3>
+<p><strong>禁用生产环境显示水合信息的原因</strong></p>
 <p>在生产环境中禁用水合信息的显示，主要是为了提高性能和安全性。显示水合信息可能会带来额外的开销，而且有可能泄露一些敏感的应用程序状态信息。通常框架会默认在生产环境下关闭这些调试信息的显示。</p>
 <hr>
 <p>上面构造最终的页面模版，因为涉及到多页面，不希望写多份入口文件和多个渲染模版：</p>
@@ -589,8 +587,8 @@
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="模块分包">👍模块分包</h3>
-<p>如果多个组件使用一个公共文件，或者都引用了vue，没有必要都打到一个entry文件中。
-合理的分包，根据不同包的使用频率、改动频率，更好的利用浏览器的并发请求特性，也能更好的利用缓存。
+<p>如果多个组件使用一个公共文件，或者都引用了vue，没有必要都打到一个entry文件中。</p>
+<p>合理的分包，根据不同包的使用频率、改动频率，更好的利用浏览器的并发请求特性，也能更好的利用缓存。
 例如vue库、某些ui库改的机会不多，单独打包出来。</p>
 <hr>
 <p>更重要的是，webpack的运行时代码，如果不单独处理，打到entry文件中，当某个chunk内容改变，运行时代码不变，但hash值也会改变，影响缓存。</p>
@@ -605,8 +603,8 @@ webpack运行时代码包含：</p>
 <p>配置分包策略，一般分为三种包：</p>
 <ol>
 <li>vendor包，代表第三方包，基本不会改动，除非依赖版本升级</li>
-<li>common，代表一些业务组件的公共部分，单独提取出来，改动较少
-3.entry.page1_3c02631e.bundle 包，代表不同的页面（业务）组件代码，经常改动</li>
+<li>common，代表一些业务组件的公共部分，单独提取出来，改动较少</li>
+<li>entry.page1_3c02631e.bundle 包，代表不同的页面（业务）组件代码，经常改动</li>
 </ol>
 <p>这样处理后，可以实现：</p>
 <ul>
@@ -676,7 +674,7 @@ webpack运行时代码包含：</p>
   <span class="p">}</span>
 </code></pre></td></tr></table>
 </div>
-</div><h3 id="生产环境的优化">👍🏻生产环境的优化</h3>
+</div><h3 id="生产环境的优化">👍🏻👍🏻👍🏻生产环境的优化</h3>
 <ol>
 <li>具体的output</li>
 </ol>
@@ -1180,7 +1178,7 @@ webpack运行时代码包含：</p>
 </code></pre></td></tr></table>
 </div>
 </div><p>通过以上这些方法，可以有效地减小 Webpack 打包后资源的大小，提高应用的加载性能。</p>
-<h2 id="-通用优化思路">👍🏻 通用优化思路</h2>
+<h2 id="通用优化思路">👍🏻👍🏻👍🏻通用优化思路</h2>
 <p>分析上面的一系列操作，可以总结出一些规律：无论什么打包工具，在做大型项目时，都有三类优化需要去做，根据对应打包工具的文档和社区做就行。</p>
 <p>重要是：</p>
 <ol>
@@ -2366,8 +2364,8 @@ webpack --profile --json &gt; stats.json
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-        2025-03-26
-        
+        2025-03-27
+        <a href="/commit/1b461c4d81c3ad16ca976184ab69850e07ca2e78" title="feat: 更新">(1b461c4)</a>
     </span>
   </p>
   
