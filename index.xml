@@ -6,7 +6,7 @@
     <description>Recent content on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Tue, 06 Dec 2022 20:58:23 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 26 Mar 2025 23:30:38 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About</title>
       <link>http://wushao666.github.io/about/</link>
@@ -14,6 +14,24 @@
       
       <guid>http://wushao666.github.io/about/</guid>
       <description>☀️ 热爱web开发，爱打球⛹，爱大自然❤ 2018-2021 北京-NUCTECH 2021-2023 北京-获得场景 2023-2024 北京-完美世界总部 2024-至今 上海-Tencent-IEG</description>
+    </item>
+    
+    <item>
+      <title>BFF的服务端设计</title>
+      <link>http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Wed, 26 Mar 2025 23:30:38 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/</guid>
+      <description>本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复</description>
+    </item>
+    
+    <item>
+      <title>为BFF层服务的前端工程化</title>
+      <link>http://wushao666.github.io/post/%E4%B8%BAbff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/</link>
+      <pubDate>Wed, 26 Mar 2025 10:35:43 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E4%B8%BAbff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/</guid>
+      <description>本节是为了BFF层设计的前端基建内容，在做前端基建之前，还是要再次复习一下我们之前的BFF服务端架构设计，方便我们更好的配合它做基建。 这套工</description>
     </item>
     
     <item>
@@ -95,15 +113,6 @@
       
       <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</guid>
       <description>mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip</description>
-    </item>
-    
-    <item>
-      <title>后台管理系统性能优化</title>
-      <link>http://wushao666.github.io/post/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</link>
-      <pubDate>Wed, 28 Sep 2022 10:28:03 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</guid>
-      <description>项目结构调整 Base开头是全局业务组件 BaseForm BasePagination BaseIcon Form开头是Form相关的小组件 FormPanel Table开发时Table相关的小组件 TableOptions The开头的是每个页</description>
     </item>
     
     <item>

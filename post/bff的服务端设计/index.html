@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>BFF的服务端设计 - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="BFF的服务端设计" />
+<meta property="og:description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2025-03-26T23:30:38+08:00" />
+<meta property="article:modified_time" content="2025-03-26T23:30:38+08:00" />
+
+<meta itemprop="name" content="BFF的服务端设计">
+<meta itemprop="description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复"><meta itemprop="datePublished" content="2025-03-26T23:30:38+08:00" />
+<meta itemprop="dateModified" content="2025-03-26T23:30:38+08:00" />
+<meta itemprop="wordCount" content="696">
+<meta itemprop="keywords" content="BFF层," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="BFF的服务端设计"/>
+<meta name="twitter:description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">BFF的服务端设计</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2025-03-26 </span>
+        <div class="post-category">
+            <a href="/categories/bff/"> BFF </a>
+            </div>
+          <span class="more-meta"> 约 696 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#服务端设计">服务端设计</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>本节是BFF层设计的开端：使用koa封装服务端逻辑。
+本系列中的BFF层设计是为了解决多个子应用访问的问题：</p>
+<ol>
+<li>避免传统的大型的一站式平台，过于复杂，牺牲了灵活性</li>
+<li>避免开发各个子系统的过度灵活性。</li>
+</ol>
+<p>通过职责单一的模块化开发，配合动态模版生成来做BFF设计。</p>
+<p>基本的BFF架构如图：
+<img src="/images/nova-bff/BFF-structure.png" alt="nova-core"></p>
+<h2 id="服务端设计">服务端设计</h2>
+<p>通过koa中间件洋葱圈模型，来处理api请求和页面请求，设计如图：
+<img src="/images/nova-bff/nova-core-structure.png" alt="nova-core">
+通过实现自定义的loader来串联整个洋葱圈模型。</p>
+<ol>
+<li>中间件请求时，按照从左 -&gt; 右顺序，</li>
+<li>响应时，按照从右 -&gt; 左响应。</li>
+</ol>
+<p>具体来说：
+有7个全局中间件，顺序是:</p>
+<ol>
+<li>api错误处理中间件</li>
+<li>静态资源目录</li>
+<li>模版渲染中间件</li>
+<li>请求超时校验中间件</li>
+<li>请求体解析中间件</li>
+<li>api签名验证中间件</li>
+<li>api参数校验中间件</li>
+</ol>
+<p>请求时，按照1 -&gt; 7的顺序依次执行
+响应时，按照7 -&gt; 1的顺序依次响应</p>
+<p>错误处理从当前中间件先处理，如果没有处理则依次往上冒泡，直到被最外层错误处理中间件捕获
+再加上router的两个中间件，整个架构设计用了9个中间件：</p>
+<p>完整顺序就是：</p>
+<ol>
+<li>api错误处理中间件</li>
+<li>静态资源目录</li>
+<li>模版渲染中间件</li>
+<li>请求超时校验中间件</li>
+<li>请求体解析中间件</li>
+<li>api签名验证中间件</li>
+<li>api参数校验中间件</li>
+<li>router中间件</li>
+<li>router方法校验中间件</li>
+</ol>
+<p>8、9是router中间件，是koa-router的中间件，是koa-router的实例方法,可以当成一个大的路由中间件就行。</p>
+<p>处理顺序有点小区别:</p>
+<p>因为路由方法校验中间件需要获取路由方法</p>
+<ul>
+<li>匹配到路由就执行路由处理函数</li>
+<li>没匹配到就交给校验方法处理
+例如要post请求，但是请求的是get
+就会走到校验方法处理，设置状态码为405</li>
+</ul>
+<p>这种设计可以：</p>
+<ol>
+<li>确保路由匹配优先于方法校验</li>
+<li>避免为不存在的路由返回405错误</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript">  <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">koaRouter</span><span class="p">.</span><span class="nx">routes</span><span class="p">())</span>
+  <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">koaRouter</span><span class="p">.</span><span class="nx">allowedMethods</span><span class="p">())</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2025-03-26
+        
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/bff%E5%B1%82/">BFF层</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/%E4%B8%BAbff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/">
+            <span class="next-text nav-default">为BFF层服务的前端工程化</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2025<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
