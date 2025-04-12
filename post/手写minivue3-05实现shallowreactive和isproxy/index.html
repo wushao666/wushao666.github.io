@@ -494,24 +494,25 @@
     </footer>
   </article>
         </div>
-        
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-10-10 10:07:06 \u002b0800 CST',
+        title: '手写miniVue3-05实现shallowReactive和isProxy',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'https:\/\/github.com\/wushao666\/hugo-blog-comments.git',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
 
   
-  <div id="vcomments"></div>
-  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
-  <script type="text/javascript">
-    new Valine({
-        el: '#vcomments' ,
-        appId: 'YpBHjDSe3NF14qHWCnclFngj-gzGzoHsz',
-        appKey: 'mXJxlZS7txiXxPeIOkz7GVEP',
-        notify:  false ,
-        verify:  false ,
-        avatar:'mp',
-        placeholder: '请留下你的宝贵意见~',
-        visitor:  false 
-    });
-  </script>
 
   
 
