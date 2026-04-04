@@ -6,7 +6,16 @@
     <description>Recent content in Posts on 吴少在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Wed, 26 Mar 2025 23:30:38 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 03 Apr 2026 10:50:25 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>古法编程之手写爬虫框架01-基础架构</title>
+      <link>http://wushao666.github.io/post/%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B%E4%B9%8B%E6%89%8B%E5%86%99%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B601-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/</link>
+      <pubDate>Fri, 03 Apr 2026 10:50:25 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B%E4%B9%8B%E6%89%8B%E5%86%99%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B601-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/</guid>
+      <description>受到 scrapy 框架启发，本系列要实现一个异步高并发的爬虫框架，记录一下手写的过程，在 AI 横行的时代，停下来审视自己架构、高并发的基本功，我觉得是挺有意</description>
+    </item>
+    
     <item>
       <title>BFF的服务端设计</title>
       <link>http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/</link>
@@ -40,7 +49,7 @@
       <pubDate>Wed, 16 Nov 2022 18:51:22 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</guid>
-      <description>今天我们来聊一聊 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。 这</description>
+      <description>最近给一些同学讲js的异步问题，总结一下。 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函</description>
     </item>
     
     <item>

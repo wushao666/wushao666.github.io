@@ -147,31 +147,49 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#这一节要干啥">这一节要干啥</a></li>
-    <li><a href="#前端工程化">前端工程化</a>
+    <li>
       <ul>
-        <li><a href="#解析编译">解析编译</a></li>
-        <li><a href="#模块分包">👍模块分包</a></li>
-        <li><a href="#生产环境的优化">👍🏻👍🏻👍🏻生产环境的优化</a></li>
-        <li><a href="#减小-webpack-打包体积">减小 Webpack 打包体积</a></li>
-      </ul>
-    </li>
-    <li><a href="#通用优化思路">👍🏻👍🏻👍🏻通用优化思路</a>
-      <ul>
-        <li><a href="#1性能优化直接影响用户体验">1、性能优化（直接影响用户体验）</a></li>
-        <li><a href="#2构建优化开发体验优化">2、构建优化（开发体验优化）</a></li>
-        <li><a href="#3代码质量优化">3、代码质量优化</a></li>
-        <li><a href="#衡量优化效果">👍🏻衡量优化效果</a></li>
-      </ul>
-    </li>
-    <li><a href="#-开发环境优化">👍 开发环境优化</a>
-      <ul>
-        <li><a href="#热更新原理">👍👍👍热更新原理</a></li>
-      </ul>
-    </li>
-    <li><a href="#基础建设">基础建设</a>
-      <ul>
-        <li><a href="#请求适配器">请求适配器</a></li>
+        <li><a href="#这一节要干啥">这一节要干啥</a></li>
+        <li><a href="#前端工程化">前端工程化</a>
+          <ul>
+            <li><a href="#解析编译">解析编译</a></li>
+            <li><a href="#模块分包">👍模块分包</a></li>
+            <li><a href="#生产环境的优化">👍🏻👍🏻👍🏻生产环境的优化</a></li>
+            <li><a href="#减小-webpack-打包体积">减小 Webpack 打包体积</a>
+              <ul>
+                <li><a href="#1-代码分割code-splitting">1. 代码分割（Code Splitting）</a></li>
+                <li><a href="#2-压缩代码">2. 压缩代码</a></li>
+                <li><a href="#3-去除无用代码tree-shaking">3. 去除无用代码（Tree Shaking）</a></li>
+                <li><a href="#4-图片优化">4. 图片优化</a></li>
+                <li><a href="#5-使用-cdn">5. 使用 CDN</a></li>
+                <li><a href="#6-配置-externals">6. 配置 externals</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#通用优化思路">👍🏻👍🏻👍🏻通用优化思路</a>
+          <ul>
+            <li><a href="#1性能优化直接影响用户体验">1、性能优化（直接影响用户体验）</a></li>
+            <li><a href="#2构建优化开发体验优化">2、构建优化（开发体验优化）</a></li>
+            <li><a href="#3代码质量优化">3、代码质量优化</a></li>
+            <li><a href="#衡量优化效果">👍🏻衡量优化效果</a>
+              <ul>
+                <li><a href="#statsjson-包含的关键信息">stats.json 包含的关键信息</a></li>
+                <li><a href="#典型分析案例">典型分析案例</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#-开发环境优化">👍 开发环境优化</a>
+          <ul>
+            <li><a href="#热更新原理">👍👍👍热更新原理</a></li>
+          </ul>
+        </li>
+        <li><a href="#基础建设">基础建设</a>
+          <ul>
+            <li><a href="#请求适配器">请求适配器</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -2440,7 +2458,7 @@ webpack --profile --json &gt; stats.json
   <span class="copyright-year">
     &copy; 
     2017 - 
-    2025<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
   </span>
 </div>
 

@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="吴少林" /><meta name="description" content="今天我们来聊一聊 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。 这" />
+<meta name="author" content="吴少林" /><meta name="description" content="最近给一些同学讲js的异步问题，总结一下。 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函" />
 
 
 
@@ -40,19 +40,19 @@
 
 
 <meta property="og:title" content="Javascript中的异步问题" />
-<meta property="og:description" content="今天我们来聊一聊 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。 这" />
+<meta property="og:description" content="最近给一些同学讲js的异步问题，总结一下。 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2022-11-16T18:51:22+08:00" />
 <meta property="article:modified_time" content="2023-04-02T13:03:52+08:00" />
 
 <meta itemprop="name" content="Javascript中的异步问题">
-<meta itemprop="description" content="今天我们来聊一聊 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。 这"><meta itemprop="datePublished" content="2022-11-16T18:51:22+08:00" />
+<meta itemprop="description" content="最近给一些同学讲js的异步问题，总结一下。 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函"><meta itemprop="datePublished" content="2022-11-16T18:51:22+08:00" />
 <meta itemprop="dateModified" content="2023-04-02T13:03:52+08:00" />
-<meta itemprop="wordCount" content="8545">
+<meta itemprop="wordCount" content="8558">
 <meta itemprop="keywords" content="前端," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Javascript中的异步问题"/>
-<meta name="twitter:description" content="今天我们来聊一聊 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。 这"/>
+<meta name="twitter:description" content="最近给一些同学讲js的异步问题，总结一下。 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -136,7 +136,7 @@
         <div class="post-category">
             <a href="/categories/javascript/"> JavaScript </a>
             </div>
-          <span class="more-meta"> 约 8545 字 </span>
+          <span class="more-meta"> 约 8558 字 </span>
           <span class="more-meta"> 预计阅读 18 分钟 </span>
         
       </div>
@@ -147,40 +147,44 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#回调函数">回调函数</a>
+    <li>
       <ul>
-        <li><a href="#回调地狱">回调地狱</a></li>
-        <li><a href="#高阶函数">高阶函数</a></li>
-        <li><a href="#异步回调函数同步回调函数">异步回调函数&lt;=&gt;同步回调函数</a></li>
-      </ul>
-    </li>
-    <li><a href="#promise">Promise</a>
-      <ul>
-        <li><a href="#promise-的特点">Promise 的特点</a></li>
-        <li><a href="#promise-状态依赖问题">promise 状态依赖问题</a></li>
-        <li><a href="#实用的几个静态方法">实用的几个静态方法</a></li>
-        <li><a href="#判断某个对象是不是-promise">判断某个对象是不是 Promise</a></li>
-      </ul>
-    </li>
-    <li><a href="#asyncawait"><code>async/await</code></a></li>
-    <li><a href="#生成器generator">生成器<code>Generator</code></a>
-      <ul>
-        <li><a href="#遍历和迭代">遍历和迭代</a></li>
-        <li><a href="#迭代器">迭代器</a></li>
-        <li><a href="#生成器">生成器</a></li>
-        <li><a href="#生成器的特点">生成器的特点</a></li>
-        <li><a href="#co模块"><code>co模块</code></a></li>
-        <li><a href="#生成器执行器"><code>生成器+执行器</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#settimeout-setinterval-requestanimationrequest"><code>setTimeout setInterval requestAnimationRequest</code></a></li>
-    <li><a href="#eventloop"><code>EventLoop</code></a></li>
-    <li><a href="#进程和线程">进程和线程</a>
-      <ul>
-        <li><a href="#js-单线程">js 单线程</a></li>
-        <li><a href="#执行栈">执行栈</a></li>
-        <li><a href="#宏任务微任务">宏任务、微任务</a></li>
-        <li><a href="#总结">总结</a></li>
+        <li><a href="#回调函数">回调函数</a>
+          <ul>
+            <li><a href="#回调地狱">回调地狱</a></li>
+            <li><a href="#高阶函数">高阶函数</a></li>
+            <li><a href="#异步回调函数同步回调函数">异步回调函数&lt;=&gt;同步回调函数</a></li>
+          </ul>
+        </li>
+        <li><a href="#promise">Promise</a>
+          <ul>
+            <li><a href="#promise-的特点">Promise 的特点</a></li>
+            <li><a href="#promise-状态依赖问题">promise 状态依赖问题</a></li>
+            <li><a href="#实用的几个静态方法">实用的几个静态方法</a></li>
+            <li><a href="#判断某个对象是不是-promise">判断某个对象是不是 Promise</a></li>
+          </ul>
+        </li>
+        <li><a href="#asyncawait"><code>async/await</code></a></li>
+        <li><a href="#生成器generator">生成器<code>Generator</code></a>
+          <ul>
+            <li><a href="#遍历和迭代">遍历和迭代</a></li>
+            <li><a href="#迭代器">迭代器</a></li>
+            <li><a href="#生成器">生成器</a></li>
+            <li><a href="#生成器的特点">生成器的特点</a></li>
+            <li><a href="#co模块"><code>co模块</code></a></li>
+            <li><a href="#生成器执行器"><code>生成器+执行器</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#settimeout-setinterval-requestanimationrequest"><code>setTimeout setInterval requestAnimationRequest</code></a></li>
+        <li><a href="#eventloop"><code>EventLoop</code></a></li>
+        <li><a href="#进程和线程">进程和线程</a>
+          <ul>
+            <li><a href="#js-单线程">js 单线程</a></li>
+            <li><a href="#执行栈">执行栈</a></li>
+            <li><a href="#宏任务微任务">宏任务、微任务</a></li>
+            <li><a href="#总结">总结</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -188,7 +192,8 @@
   </div>
 </div>
     <div class="post-content">
-      <p>今天我们来聊一聊 JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。
+      <p>最近给一些同学讲js的异步问题，总结一下。
+JavaScript 中的&quot;异步&quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函数有了结果，再来通知我。
 这个通知的动作就叫回调函数-<code>callback</code>，更准确的说这里是异步回调函数。</p>
 <h2 id="回调函数">回调函数</h2>
 <p>在 JavaScript 中，回调函数处处可以见到，比如</p>
@@ -1875,7 +1880,7 @@
   <span class="copyright-year">
     &copy; 
     2017 - 
-    2025<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
   </span>
 </div>
 

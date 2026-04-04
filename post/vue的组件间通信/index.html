@@ -147,20 +147,24 @@
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#父子组件通信">父子组件通信</a>
+    <li>
       <ul>
-        <li><a href="#propsemit">props/emit</a></li>
-        <li><a href="#parentchildrenrefs">$parent/$children/$refs</a></li>
-        <li><a href="#attrslisteners">$attrs/$listeners</a></li>
+        <li><a href="#父子组件通信">父子组件通信</a>
+          <ul>
+            <li><a href="#propsemit">props/emit</a></li>
+            <li><a href="#parentchildrenrefs">$parent/$children/$refs</a></li>
+            <li><a href="#attrslisteners">$attrs/$listeners</a></li>
+          </ul>
+        </li>
+        <li><a href="#多级嵌套组件">多级嵌套组件</a>
+          <ul>
+            <li><a href="#自定义事件">自定义事件</a></li>
+            <li><a href="#provideinject">provide/inject</a></li>
+          </ul>
+        </li>
+        <li><a href="#兄弟组件">兄弟组件</a></li>
       </ul>
     </li>
-    <li><a href="#多级嵌套组件">多级嵌套组件</a>
-      <ul>
-        <li><a href="#自定义事件">自定义事件</a></li>
-        <li><a href="#provideinject">provide/inject</a></li>
-      </ul>
-    </li>
-    <li><a href="#兄弟组件">兄弟组件</a></li>
   </ul>
 </nav>
   </div>
@@ -168,7 +172,7 @@
     <div class="post-content">
       <p>在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法的过程。
 通常组件之间的关系大致可以分为: 父子组件、多级嵌套组件（也可以叫爷孙组件）、兄弟组件三大类。
-本文中的 vue3 的写法都是使用<!-- raw HTML omitted -->的组合式 api 的写法。</p>
+本文中的 vue3 的写法都是使用<script setup>的组合式 api 的写法。</p>
 <h2 id="父子组件通信">父子组件通信</h2>
 <p>对于父子组件通信，是最基础也是最常见的组间模式，一般常用的有三种方式：</p>
 <ol>
@@ -183,7 +187,7 @@
 <li>子组件不能修改 props 的值，数据流是单向的，只能是父 -&gt; 子</li>
 <li>子组件通过$emit 方式抛出方法，父组件 v-on 监听对应的方法，对数据做处理。</li>
 </ol>
-<p>对于 vue3 来说，使用 <!-- raw HTML omitted --> 的组合式 API 新方式是：</p>
+<p>对于 vue3 来说，使用 <script setup> 的组合式 API 新方式是：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -252,7 +256,7 @@
 <ul>
 <li>移除了$children，建议使用$refs 来获取子组件</li>
 <li>不建议使用$parent，需要通过<code>getCurrentInstance</code>，进而去找到 parent</li>
-<li>同时使用 <!-- raw HTML omitted --> 的组合式 API 的内容都是私有的，需要通过 defineExpose()方法暴露出去</li>
+<li>同时使用 <script setup> 的组合式 API 的内容都是私有的，需要通过 defineExpose()方法暴露出去</li>
 <li>$refs 的使用注意定义的变量要和组件上设置的 ref 属性值一样</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -492,7 +496,7 @@
   <span class="copyright-year">
     &copy; 
     2017 - 
-    2025<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
   </span>
 </div>
 
