@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>BFF层 on 吴少在Coding</title>
+    <link>http://wushao666.github.io/tags/bff%E5%B1%82/</link>
+    <description>Recent content in BFF层 on 吴少在Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Mon, 26 Aug 2024 10:35:43 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/tags/bff%E5%B1%82/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>BFF层服务的前端工程化</title>
+      <link>http://wushao666.github.io/post/bff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/</link>
+      <pubDate>Mon, 26 Aug 2024 10:35:43 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/bff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/</guid>
+      <description>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。 本文就是为了BFF层设计的前端基建内容，在做前端基建之前，还是要再次复习一下我们之</description>
+    </item>
+    
+    <item>
+      <title>BFF的服务端设计</title>
+      <link>http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Sun, 16 Jun 2024 23:30:38 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/</guid>
+      <description>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。</description>
+    </item>
+    
+  </channel>
+</rss>

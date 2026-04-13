@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>vue on 吴少在Coding</title>
+    <link>http://wushao666.github.io/tags/vue/</link>
+    <description>Recent content in vue on 吴少在Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Tue, 06 Dec 2022 20:58:23 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/tags/vue/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Vue的组件间通信</title>
+      <link>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</link>
+      <pubDate>Tue, 06 Dec 2022 20:58:23 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</guid>
+      <description>在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法</description>
+    </item>
+    
+  </channel>
+</rss>

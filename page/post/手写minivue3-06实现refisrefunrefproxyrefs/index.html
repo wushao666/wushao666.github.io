@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>手写miniVue3-06实现ref、isRef、unRef、proxyRefs - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="吴少林" /><meta name="description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="手写miniVue3-06实现ref、isRef、unRef、proxyRefs" />
+<meta property="og:description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-10-10T14:31:28+08:00" />
+<meta property="article:modified_time" content="2023-04-02T13:03:52+08:00" />
+
+<meta itemprop="name" content="手写miniVue3-06实现ref、isRef、unRef、proxyRefs">
+<meta itemprop="description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue"><meta itemprop="datePublished" content="2022-10-10T14:31:28+08:00" />
+<meta itemprop="dateModified" content="2023-04-02T13:03:52+08:00" />
+<meta itemprop="wordCount" content="3121">
+<meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="手写miniVue3-06实现ref、isRef、unRef、proxyRefs"/>
+<meta name="twitter:description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">手写miniVue3-06实现ref、isRef、unRef、proxyRefs</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-10-10 </span>
+        <div class="post-category">
+            <a href="/categories/vue/"> vue </a>
+            </div>
+          <span class="more-meta"> 约 3121 字 </span>
+          <span class="more-meta"> 预计阅读 7 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#实现ref">实现<code>ref</code></a>
+          <ul>
+            <li><a href="#重构effect">重构<code>effect</code></a></li>
+            <li><a href="#实现ref-1">实现<code>ref</code></a></li>
+          </ul>
+        </li>
+        <li><a href="#实现isref和unref">实现<code>isRef和unRef</code></a>
+          <ul>
+            <li><a href="#实际开发中的注意事项">实际开发中的注意事项</a></li>
+          </ul>
+        </li>
+        <li><a href="#实现proxyrefs">实现<code>proxyRefs</code></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="实现ref">实现<code>ref</code></h2>
+<p>本节我们要实现一个超级重要的响应式操作-<code>ref()</code>，它是比响应式核心中的<code>reactive()</code>使用的更为频繁的一个操作，真正的<code>vue3开发</code>中我们也是会经常看到<code>ref</code>的身影，主要是因为<code>reactive()</code>有一定的<a href="https://cn.vuejs.org/guide/essentials/reactivity-fundamentals.html#limitations-of-reactive">局限性</a>：</p>
+<blockquote>
+<ol>
+<li>仅对对象类型有效，对于基本类型<code>string boolean number</code>类型无效</li>
+<li>因为<code>vue3响应式系统</code>需要通过属性访问进行追踪，因此我们必须始终保持对该响应式对象的相同引用。这意味着我们不可以随意地“替换”一个响应式对象，因为这将导致对初始引用的响应性连接丢失：</li>
+</ol>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">state</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span> <span class="nx">count</span><span class="o">:</span> <span class="mi">0</span> <span class="p">})</span>
+
+<span class="c1">// 上面的引用 ({ count: 0 }) 将不再被追踪（响应性连接已丢失！）
+</span><span class="c1"></span><span class="nx">state</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span> <span class="nx">count</span><span class="o">:</span> <span class="mi">1</span> <span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>同时这也意味着当我们将响应式对象的属性赋值或解构至本地变量时，或是将该属性传入一个函数时，我们会失去响应性：</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">state</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span> <span class="nx">count</span><span class="o">:</span> <span class="mi">0</span> <span class="p">})</span>
+
+<span class="c1">// n 是一个局部变量，同 state.count
+</span><span class="c1">// 失去响应性连接
+</span><span class="c1"></span><span class="kd">let</span> <span class="nx">n</span> <span class="o">=</span> <span class="nx">state</span><span class="p">.</span><span class="nx">count</span>
+<span class="c1">// 不影响原始的 state
+</span><span class="c1"></span><span class="nx">n</span><span class="o">++</span>
+
+<span class="c1">// count 也和 state.count 失去了响应性连接
+</span><span class="c1"></span><span class="kd">let</span> <span class="p">{</span> <span class="nx">count</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">state</span>
+<span class="c1">// 不会影响原始的 state
+</span><span class="c1"></span><span class="nx">count</span><span class="o">++</span>
+
+<span class="c1">// 该函数接收一个普通数字，并且
+</span><span class="c1">// 将无法跟踪 state.count 的变化
+</span><span class="c1"></span><span class="nx">callSomeFunction</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">count</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这种限制主要是因为js本身并没有提供可以作用与所有类型的一个<code>引用机制</code>，所以我们需要自己实现这样的一种引用机制，也就是<code>ref()</code>出现的背景，它可以为所有的类型提供响应式， 我们先看一下测试用例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">effect</span> <span class="p">}</span> <span class="kr">from</span> <span class="s2">&#34;../effect&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">ref</span> <span class="p">}</span> <span class="kr">from</span> <span class="s2">&#34;../ref&#34;</span><span class="p">;</span>
+
+
+<span class="nx">describe</span><span class="p">(</span><span class="s2">&#34;ref&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">it</span><span class="p">(</span><span class="s2">&#34;happy path&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">a</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">value</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="s2">&#34;should be reactive&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">a</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">dummy</span><span class="p">;</span>
+    <span class="kd">let</span> <span class="nx">calls</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nx">effect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">calls</span><span class="o">++</span><span class="p">;</span>
+      <span class="nx">dummy</span> <span class="o">=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">calls</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nx">a</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">calls</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="c1">// same value should not trigger
+</span><span class="c1"></span>    <span class="nx">a</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">calls</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+  <span class="p">});</span>
+
+  <span class="nx">it</span><span class="p">(</span><span class="s2">&#34;should make nested properties reactive&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">a</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">({</span>
+      <span class="nx">count</span>: <span class="kt">1</span><span class="p">,</span>
+    <span class="p">});</span>
+    <span class="kd">let</span> <span class="nx">dummy</span><span class="p">;</span>
+    <span class="nx">effect</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">dummy</span> <span class="o">=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">count</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="nx">a</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">count</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="nx">expect</span><span class="p">(</span><span class="nx">dummy</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>分析一下可以发现<code>ref()</code>需要：</p>
+<ol>
+<li>接受任意类型数据，返回一个响应式对象，只有一个value属性，这个value属性值也是响应式的，也就是说读取value属性时，收集依赖</li>
+<li>value属性修改后也会触发effect的fn，修改value属性时触发依赖</li>
+<li>相同值重复设置，不会触发</li>
+</ol>
+<h3 id="重构effect">重构<code>effect</code></h3>
+<p><code>ref()</code>也需要用到响应式核心中的核心<code>effect</code>，为了和reactive业务逻辑解耦，我们需要先重构一下<code>effect.ts</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// effect.ts
+</span><span class="c1"></span><span class="kr">import</span> <span class="p">{</span> <span class="nx">extend</span> <span class="p">}</span> <span class="kr">from</span> <span class="s1">&#39;../shared/index&#39;</span>
+
+<span class="kd">let</span> <span class="nx">shouldTrack</span>
+<span class="kd">let</span> <span class="nx">activeEffect</span>
+
+<span class="kr">class</span> <span class="nx">ReactiveEffect</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">_fn</span>: <span class="kt">any</span>
+  <span class="kr">public</span> <span class="nx">scheduler</span>: <span class="kt">any</span>
+  <span class="nx">deps</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="nx">isStop</span><span class="o">?:</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="k">void</span>
+  <span class="nx">isActive</span> <span class="o">=</span> <span class="kc">true</span>
+
+  <span class="kr">constructor</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">scheduler</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span> <span class="o">=</span> <span class="nx">fn</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">scheduler</span> <span class="o">=</span> <span class="nx">scheduler</span>
+  <span class="p">}</span>
+
+  <span class="nx">run() {</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isActive</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="nx">activeEffect</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="nx">shouldTrack</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_fn</span><span class="p">()</span>
+    <span class="c1">// 执行完了之后重置shouldTrack
+</span><span class="c1"></span>    <span class="nx">shouldTrack</span> <span class="o">=</span> <span class="kc">false</span>
+
+    <span class="k">return</span> <span class="nx">result</span>
+  <span class="p">}</span>
+
+  <span class="nx">stop() {</span>
+    <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">isActive</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">cleanEffect</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">onStop</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="k">this</span><span class="p">.</span><span class="nx">onStop</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">onStop</span><span class="p">()</span>
+      <span class="p">}</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">isActive</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">cleanEffect</span><span class="p">(</span><span class="nx">effect</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">effect</span><span class="p">.</span><span class="nx">deps</span><span class="p">.</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">dep</span>: <span class="kt">Set</span><span class="p">&lt;</span><span class="nt">ReactiveEffect</span><span class="p">&gt;)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">dep</span><span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="nx">effect</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+<span class="kd">let</span> <span class="nx">targetMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">()</span>
+<span class="kd">function</span> <span class="nx">track</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">isTracking</span><span class="p">())</span> <span class="k">return</span>
+  <span class="kd">let</span> <span class="nx">depsMap</span> <span class="o">=</span> <span class="nx">targetMap</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">depsMap</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">depsMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">()</span>
+    <span class="nx">targetMap</span><span class="p">.</span><span class="kr">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">depsMap</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="kd">let</span> <span class="nx">depsSet</span> <span class="o">=</span> <span class="nx">depsMap</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">depsSet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">depsSet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">()</span>
+    <span class="nx">depsMap</span><span class="p">.</span><span class="kr">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">depsSet</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="c1">// 📢注意注意
+</span><span class="c1"></span>  <span class="c1">// 📢注意注意
+</span><span class="c1"></span>  <span class="c1">// 📢注意注意
+</span><span class="c1"></span>  <span class="c1">// 这里就是收集effect的核心依赖逻辑，抽离出去进行重构
+</span><span class="c1"></span>  <span class="c1">// depsSet.add(activeEffect)
+</span><span class="c1"></span>  <span class="c1">// // 反向收集依赖，为stop时effect删除用
+</span><span class="c1"></span>  <span class="c1">// activeEffect.deps.push(depsSet)
+</span><span class="c1"></span>  <span class="nx">trackEffects</span><span class="p">(</span><span class="nx">depsSet</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">trackEffects</span><span class="p">(</span><span class="nx">depsSet</span>: <span class="kt">Set</span><span class="p">&lt;</span><span class="nt">any</span><span class="p">&gt;)</span> <span class="p">{</span>
+  <span class="nx">depsSet</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">activeEffect</span><span class="p">)</span>
+  <span class="c1">// 反向收集依赖，为stop时effect删除用
+</span><span class="c1"></span>  <span class="nx">activeEffect</span><span class="p">.</span><span class="nx">deps</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">depsSet</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="kd">function</span> <span class="nx">trigger</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">depsMap</span> <span class="o">=</span> <span class="nx">targetMap</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="nx">target</span><span class="p">)</span> 
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">depsMap</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 理论上必须要有这个map，没有就是大bug
+</span><span class="c1"></span>    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;找不到依赖&#39;</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="kr">const</span> <span class="nx">depsSet</span> <span class="o">=</span> <span class="nx">depsMap</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+
+  <span class="c1">//📢注意
+</span><span class="c1"></span>  <span class="c1">//📢注意
+</span><span class="c1"></span>  <span class="c1">//📢注意
+</span><span class="c1"></span>  <span class="c1">//📢注意
+</span><span class="c1"></span>  <span class="c1">//📢注意
+</span><span class="c1"></span>  <span class="c1">// 这里执行真正的依赖中的run方法抽离出去
+</span><span class="c1"></span>  <span class="c1">// for(const effect of depsSet) {
+</span><span class="c1"></span>  <span class="c1">//   if(effect.scheduler) {
+</span><span class="c1"></span>  <span class="c1">//     effect.scheduler()
+</span><span class="c1"></span>  <span class="c1">//   } else {
+</span><span class="c1"></span>  <span class="c1">//     effect.run()
+</span><span class="c1"></span>  <span class="c1">//   }
+</span><span class="c1"></span>  <span class="c1">// }
+</span><span class="c1"></span>  <span class="nx">triggerEffects</span><span class="p">(</span><span class="nx">depsSet</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">triggerEffects</span><span class="p">(</span><span class="nx">depsSet</span>: <span class="kt">Set</span><span class="p">&lt;</span><span class="nt">any</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="k">for</span><span class="p">(</span><span class="kr">const</span> <span class="nx">effect</span> <span class="k">of</span> <span class="nx">depsSet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">effect</span><span class="p">.</span><span class="nx">scheduler</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">effect</span><span class="p">.</span><span class="nx">scheduler</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">effect</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+<span class="kd">function</span> <span class="nx">isTracking() {</span>
+  <span class="k">return</span> <span class="nx">shouldTrack</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">activeEffect</span> <span class="o">!==</span> <span class="s1">&#39;undefined&#39;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">effect</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">_effect</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReactiveEffect</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">scheduler</span><span class="p">)</span>
+  <span class="nx">extend</span><span class="p">(</span><span class="nx">_effect</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="c1">//聚合属性
+</span><span class="c1"></span>
+  <span class="c1">//默认执行一次run
+</span><span class="c1"></span>  <span class="nx">_effect</span><span class="p">.</span><span class="nx">run</span><span class="p">()</span>
+  <span class="kr">const</span> <span class="nx">runner</span> <span class="o">=</span> <span class="nx">_effect</span><span class="p">.</span><span class="nx">run</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">_effect</span><span class="p">)</span> <span class="c1">// 绑定this
+</span><span class="c1"></span>  <span class="nx">runner</span><span class="p">.</span><span class="nx">effect</span> <span class="o">=</span> <span class="nx">_effect</span> <span class="c1">// 为stop中的runner对象正确取到effect
+</span><span class="c1"></span>
+  <span class="k">return</span> <span class="nx">runner</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">stop</span><span class="p">(</span><span class="nx">runner</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">runner</span><span class="p">.</span><span class="nx">effect</span><span class="p">.</span><span class="nx">stop</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">effect</span><span class="p">,</span>
+  <span class="nx">track</span><span class="p">,</span>
+  <span class="nx">trigger</span><span class="p">,</span>
+  <span class="nx">stop</span><span class="p">,</span>
+  <span class="nx">ReactiveEffect</span><span class="p">,</span>
+  <span class="nx">isTracking</span><span class="p">,</span>
+  <span class="nx">triggerEffects</span><span class="p">,</span>
+  <span class="nx">trackEffects</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>最终经过我们的改造，抽离出两个公共函数<code>trackEffects triggerEffects</code>, 所有的响应式数据都用这两个进行核心依赖的收集与触发。</p>
+<h3 id="实现ref-1">实现<code>ref</code></h3>
+<p><code>ref()</code>模块本质上和<code>reactive()响应式模块一样</code>，区别主要在于 它返回一个只有value属性的对象，并且这个也是被<code>reactive()包装后的对象</code>，接下来我们完善细节：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// ref.ts
+</span><span class="c1"></span><span class="kr">import</span> <span class="p">{</span><span class="nx">trackEffects</span><span class="p">,</span> <span class="nx">triggerEffects</span><span class="p">,</span> <span class="nx">ReactiveEffect</span><span class="p">,</span> <span class="nx">isTracking</span><span class="p">}</span> <span class="kr">from</span> <span class="s1">&#39;./effect&#39;</span>
+
+<span class="kr">class</span> <span class="nx">RefImpl</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">_value</span>: <span class="kt">any</span>
+  <span class="kr">private</span> <span class="nx">_rawValue</span>: <span class="kt">any</span>
+  <span class="nx">deps</span>: <span class="kt">Set</span><span class="p">&lt;</span><span class="nt">ReactiveEffect</span><span class="p">&gt;;</span>
+  <span class="kr">constructor</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span> 
+    <span class="c1">// 将对象转换 
+</span><span class="c1"></span>    <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">convert</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span>
+    <span class="c1">// 存储原始值做备份
+</span><span class="c1"></span>    <span class="k">this</span><span class="p">.</span><span class="nx">_rawValue</span> <span class="o">=</span> <span class="nx">value</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">deps</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">()</span>
+  <span class="p">}</span>
+
+  <span class="kr">public</span> <span class="kr">get</span> <span class="nx">value</span><span class="p">()</span><span class="o">:</span> <span class="kt">any</span> <span class="p">{</span>
+    <span class="c1">// 获取value属性时触发这里,收集依赖
+</span><span class="c1"></span>    <span class="nx">trackRefValue</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+    <span class="c1">// 返回包裹后的对象
+</span><span class="c1"></span>    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_value</span>
+  <span class="p">}</span>
+
+  <span class="kr">public</span> <span class="kr">set</span> <span class="nx">value</span><span class="p">(</span><span class="nx">newValue</span>: <span class="kt">any</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 判断前后是不是一个值，是一个值就不需要执行
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="nx">hasChanged</span><span class="p">(</span><span class="nx">newValue</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">_rawValue</span><span class="p">))</span> <span class="p">{</span>
+      <span class="c1">// 设置之后更新原始值
+</span><span class="c1"></span>      <span class="k">this</span><span class="p">.</span><span class="nx">_rawValue</span> <span class="o">=</span> <span class="nx">newValue</span>
+      <span class="c1">// 设置value真正的值
+</span><span class="c1"></span>      <span class="k">this</span><span class="p">.</span><span class="nx">_value</span> <span class="o">=</span> <span class="nx">convert</span><span class="p">(</span><span class="nx">newValue</span><span class="p">)</span>
+      <span class="c1">// 触发依赖，执行effect中的fn
+</span><span class="c1"></span>      <span class="nx">triggerEffects</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">deps</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">trackRefValue</span><span class="p">(</span><span class="nx">ref</span>: <span class="kt">RefImpl</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// 可以收集才收集
+</span><span class="c1"></span>  <span class="k">if</span><span class="p">(</span><span class="nx">isTracking</span><span class="p">())</span> <span class="p">{</span>
+    <span class="nx">trackEffects</span><span class="p">(</span><span class="nx">ref</span><span class="p">.</span><span class="nx">deps</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// 转换对象，是个对象就用reactive进行包裹，不是就直接返回
+</span><span class="c1"></span><span class="kd">function</span> <span class="nx">convert</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">isObject</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="o">?</span> <span class="nx">reactive</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="o">:</span> <span class="nx">val</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">ref</span><span class="p">(</span><span class="nx">raw</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nx">RefImpl</span><span class="p">(</span><span class="nx">raw</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>同时在<code>shared/index.ts</code>中增加了判断对象是否变化的工具函数:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// shared/index.ts
+</span><span class="c1"></span><span class="kd">function</span> <span class="nx">hasChanged</span><span class="p">(</span><span class="k">new</span><span class="p">,</span> <span class="nx">old</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="o">!</span><span class="nb">Object</span><span class="p">.</span><span class="k">is</span><span class="p">(</span><span class="k">new</span><span class="p">,</span> <span class="nx">old</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">hasChanged</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="实现isref和unref">实现<code>isRef和unRef</code></h2>
+<p>本节我们再次实现关于ref的工具函数，先看新增的测试用例:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// ref.spec.ts
+</span><span class="c1"></span><span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should isRef&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">a</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="kr">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span>
+    <span class="nx">age</span>: <span class="kt">1</span>
+  <span class="p">})</span>
+
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">isRef</span><span class="p">(</span><span class="nx">a</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">isRef</span><span class="p">(</span><span class="mi">1</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">isRef</span><span class="p">(</span><span class="nx">user</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+<span class="p">});</span>
+<span class="nx">it</span><span class="p">(</span><span class="s2">&#34;should unRef&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">a</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">unRef</span><span class="p">(</span><span class="nx">a</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">unRef</span><span class="p">(</span><span class="mi">1</span><span class="p">)).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>分析这两个新增的case，可以发现：</p>
+<ol>
+<li><code>isRef</code>就是判断这个对象是不是由<code>ref()</code>创建的对象</li>
+<li><code>unRef</code>就是解包，相当于直接去获取value了</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// ref.ts
+</span><span class="c1"></span><span class="kr">class</span> <span class="nx">RefImpl</span> <span class="p">{</span>
+  <span class="c1">// 新增属性
+</span><span class="c1"></span>  <span class="kr">public</span> <span class="nx">__v_isRef</span> <span class="o">=</span> <span class="kc">true</span>
+<span class="p">}</span>
+
+<span class="c1">// 判断是不是ref就看有没有这个属性即可
+</span><span class="c1"></span><span class="kd">function</span> <span class="nx">isRef</span><span class="p">(</span><span class="nx">ref</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// !!避免undefined的影响
+</span><span class="c1"></span>  <span class="k">return</span> <span class="o">!!</span><span class="nx">ref</span><span class="p">.</span><span class="nx">__v_isRef</span>
+<span class="p">}</span>
+
+<span class="c1">// 先判断是不是ref得，再解包
+</span><span class="c1"></span><span class="kd">function</span> <span class="nx">unRef</span><span class="p">(</span><span class="nx">ref</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">isRef</span><span class="p">(</span><span class="nx">ref</span><span class="p">)</span> <span class="o">?</span> <span class="nx">ref.value</span> : <span class="kt">ref</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">isRef</span><span class="p">,</span>
+  <span class="nx">unRef</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="实际开发中的注意事项">实际开发中的注意事项</h3>
+<p>在实际<code>vue3</code>项目开发中，<code>template</code>中的ref对象会被自动解包，不需要.value操作，但是注意📢：</p>
+<ul>
+<li>仅当 ref 是模板渲染上下文的顶层属性时才适用自动“解包”。 例如， foo 是顶层属性，但 object.foo 不是。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="p">&lt;</span><span class="nt">script</span> <span class="na">setup</span><span class="p">&gt;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">ref</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue&#39;</span>
+<span class="kr">const</span> <span class="nx">count</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
+{{ count }} <span class="c">&lt;!-- 不需要count.value了--&gt;</span>
+<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// 但是
+</span><span class="c1"></span><span class="kr">const</span> <span class="nx">object</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">foo</span><span class="o">:</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="c1">// 在模版中不能这样写了
+</span><span class="c1"></span><span class="p">{{</span> <span class="nx">object</span><span class="p">.</span><span class="nx">foo</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">}}</span> <span class="c1">// 会打印出[object Object]
+</span><span class="c1"></span>
+<span class="c1">// 因为foo不是顶层属性了
+</span><span class="c1">// 可以改为：
+</span><span class="c1"></span><span class="kr">const</span> <span class="p">{</span> <span class="nx">foo</span> <span class="p">}</span><span class="o">=</span> <span class="nx">object</span>
+<span class="p">{{</span> <span class="nx">foo</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>同时ref会在被reactive包裹后自动解包</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">a</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="kr">const</span> <span class="nx">b</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">({</span>
+  <span class="nx">a</span>
+<span class="p">})</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">a</span><span class="p">)</span> <span class="c1">// 直接打印出0了
+</span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>当 ref 作为响应式数组或像 Map 这种原生集合类型的元素被访问时，不会进行解包。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">books</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">([</span><span class="nx">ref</span><span class="p">(</span><span class="s1">&#39;Vue 3 Guide&#39;</span><span class="p">)])</span>
+<span class="c1">// 这里需要 .value
+</span><span class="c1"></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">books</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">value</span><span class="p">)</span>
+
+<span class="kr">const</span> <span class="nx">map</span> <span class="o">=</span> <span class="nx">reactive</span><span class="p">(</span><span class="k">new</span> <span class="nx">Map</span><span class="p">([[</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">0</span><span class="p">)]]))</span>
+<span class="c1">// 这里需要 .value
+</span><span class="c1"></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">map</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">).</span><span class="nx">value</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>那么上面为什么可以不用.value，自动解包呢，继续往下实现<code>proxyRefs</code></p>
+<h2 id="实现proxyrefs">实现<code>proxyRefs</code></h2>
+<p><code>proxyRefs()</code>就是代理ref，帮你直接返回.value的操作，先看测试用例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// ref.spec.ts 新增
+</span><span class="c1"></span><span class="nx">it</span><span class="p">(</span><span class="s2">&#34;proxyRefs&#34;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="c1">// 代理refs就是template里面不需要.value的原因
+</span><span class="c1"></span>  <span class="kr">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">age</span>: <span class="kt">ref</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">&#34;xiaohong&#34;</span><span class="p">,</span>
+  <span class="p">};</span>
+
+  <span class="kr">const</span> <span class="nx">proxyUser</span> <span class="o">=</span> <span class="nx">proxyRefs</span><span class="p">(</span><span class="nx">user</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">age</span><span class="p">.</span><span class="nx">value</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">proxyUser</span><span class="p">.</span><span class="nx">age</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span> <span class="c1">// 一旦被代理过就不需要再获取.value属性了
+</span><span class="c1"></span>  <span class="nx">expect</span><span class="p">(</span><span class="nx">proxyUser</span><span class="p">.</span><span class="nx">name</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s2">&#34;xiaohong&#34;</span><span class="p">);</span>
+
+  <span class="nx">proxyUser</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">proxyUser</span><span class="p">.</span><span class="nx">age</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">age</span><span class="p">.</span><span class="nx">value</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+
+  <span class="nx">proxyUser</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">proxyUser</span><span class="p">.</span><span class="nx">age</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+  <span class="nx">expect</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">age</span><span class="p">.</span><span class="nx">value</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>分析测试用例可以知道：</p>
+<ol>
+<li>get的时候，如果是ref，直接返回.value，如果不是ref，直接返回value即可，也就是之前实现的unRef()</li>
+<li>set的时候，先判断原来是什么类型，新设置的是什么类型，如果原来是ref，设置了普通值，直接替换，如果是ref，就返回值</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// ref.ts 新增
+</span><span class="c1"></span>
+<span class="kd">function</span> <span class="nx">proxyRefs</span><span class="p">(</span><span class="nx">objectWithRefs</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nx">Proxy</span><span class="p">(</span><span class="nx">objectWithRefs</span><span class="p">,</span> <span class="p">{</span>
+    <span class="kr">get</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">Reflect</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+      <span class="k">return</span> <span class="nx">unRef</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="kr">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">oldValue</span> <span class="o">=</span> <span class="nx">target</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
+      <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">Reflect</span><span class="p">.</span><span class="kr">set</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span>
+      <span class="k">if</span><span class="p">(</span><span class="nx">isRef</span><span class="p">(</span><span class="nx">oldValue</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">isRef</span><span class="p">(</span><span class="nx">value</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 原来是ref，新设置的不是ref的类型
+</span><span class="c1"></span>        <span class="c1">// 直接设置原来ref.value为新的值
+</span><span class="c1"></span>        <span class="k">return</span> <span class="nx">target</span><span class="p">[</span><span class="nx">key</span><span class="p">].</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">value</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// 新设置的一个新的ref对象，就直接替换就行
+</span><span class="c1"></span>        <span class="k">return</span> <span class="nx">result</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="p">{</span>
+  <span class="nx">proxyRefs</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">吴少林</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2023-04-02
+        <a href="/commit/1bb8345645932d18fce5da3057660bbaf5b85649" title="feat: 更新blog">(1bb8345)</a>
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/vue3/">vue3</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">手写miniVue3-07实现computed</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/">
+            <span class="next-text nav-default">手写miniVue3-05实现shallowReactive和isProxy</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-10-10 14:31:28 \u002b0800 CST',
+        title: '手写miniVue3-06实现ref、isRef、unRef、proxyRefs',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'hugo-blog-comments',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>吴少林</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
