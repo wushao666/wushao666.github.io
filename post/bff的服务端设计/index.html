@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="吴少林" /><meta name="description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复" />
+<meta name="author" content="吴少林" /><meta name="description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。" />
 
 
 
@@ -40,19 +40,19 @@
 
 
 <meta property="og:title" content="BFF的服务端设计" />
-<meta property="og:description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复" />
+<meta property="og:description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2025-03-26T23:30:38+08:00" />
+<meta property="article:published_time" content="2024-06-16T23:30:38+08:00" />
 <meta property="article:modified_time" content="2025-03-27T16:02:08+08:00" />
 
 <meta itemprop="name" content="BFF的服务端设计">
-<meta itemprop="description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复"><meta itemprop="datePublished" content="2025-03-26T23:30:38+08:00" />
+<meta itemprop="description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。"><meta itemprop="datePublished" content="2024-06-16T23:30:38+08:00" />
 <meta itemprop="dateModified" content="2025-03-27T16:02:08+08:00" />
-<meta itemprop="wordCount" content="696">
+<meta itemprop="wordCount" content="740">
 <meta itemprop="keywords" content="BFF层," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="BFF的服务端设计"/>
-<meta name="twitter:description" content="本节是BFF层设计的开端：使用koa封装服务端逻辑。 本系列中的BFF层设计是为了解决多个子应用访问的问题： 避免传统的大型的一站式平台，过于复"/>
+<meta name="twitter:description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -132,11 +132,11 @@
       <h1 class="post-title">BFF的服务端设计</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2025-03-26 </span>
+        <span class="post-time"> 2024-06-16 </span>
         <div class="post-category">
             <a href="/categories/bff/"> BFF </a>
             </div>
-          <span class="more-meta"> 约 696 字 </span>
+          <span class="more-meta"> 约 740 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         
       </div>
@@ -157,7 +157,8 @@
   </div>
 </div>
     <div class="post-content">
-      <p>本节是BFF层设计的开端：使用koa封装服务端逻辑。
+      <p>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。</p>
+<p>本文是BFF层设计的开端：使用koa封装服务端逻辑。
 本系列中的BFF层设计是为了解决多个子应用访问的问题：</p>
 <ol>
 <li>避免传统的大型的一站式平台，过于复杂，牺牲了灵活性</li>
@@ -251,13 +252,13 @@
           <a href="/tags/bff%E5%B1%82/">BFF层</a>
           </div>
       <nav class="post-nav">
-        <a class="prev" href="/post/%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B%E4%B9%8B%E6%89%8B%E5%86%99%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B601-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/">
+        <a class="prev" href="/post/bff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">古法编程之手写爬虫框架01-基础架构</span>
+            <span class="prev-text nav-default">BFF层服务的前端工程化</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        <a class="next" href="/post/%E4%B8%BAbff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/">
-            <span class="next-text nav-default">为BFF层服务的前端工程化</span>
+        <a class="next" href="/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/">
+            <span class="next-text nav-default">Vue的组件间通信</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
@@ -270,7 +271,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2025-03-26 23:30:38 \u002b0800 CST',
+        id: '2024-06-16 23:30:38 \u002b0800 CST',
         title: 'BFF的服务端设计',
         clientID: 'Ov23liIOS4xVWBCr8CiQ',
         clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',

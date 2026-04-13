@@ -1,2 +1,0 @@
-User-agent: *
-Sitemap: http://wushao666.github.io/sitemap.xml
