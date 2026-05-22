@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>AIAgent工作经历复盘 - 吴少在Coding</title>
+  <title>RAG系统设计 - 吴少在Coding</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="沐桢" /><meta name="description" content="这个系列文章主要是复盘、总结、重新审视我在AIAgent领域的工作经历，从在完美世界做的游戏内个性化 NPC，以及鹅厂不算完美的代码生成平台，" />
+<meta name="author" content="沐桢" /><meta name="description" content="flowchart LR Client[&amp;#34;前端/调用方&amp;#34;] --&amp;gt; API[&amp;#34;FastAPI app_main:app&amp;#34;] API --&amp;gt; UserRouter[&amp;#34;router/user_rt.py\n登录、注" />
 
 
 
@@ -26,7 +26,7 @@
 <meta name="generator" content="Hugo 0.92.2 with theme even" />
 
 
-<link rel="canonical" href="http://wushao666.github.io/post/aiagent%E5%B7%A5%E4%BD%9C%E7%BB%8F%E5%8E%86%E5%A4%8D%E7%9B%98/" />
+<link rel="canonical" href="http://wushao666.github.io/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -39,20 +39,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="AIAgent工作经历复盘" />
-<meta property="og:description" content="这个系列文章主要是复盘、总结、重新审视我在AIAgent领域的工作经历，从在完美世界做的游戏内个性化 NPC，以及鹅厂不算完美的代码生成平台，" />
+<meta property="og:title" content="RAG系统设计" />
+<meta property="og:description" content="flowchart LR Client[&#34;前端/调用方&#34;] --&gt; API[&#34;FastAPI app_main:app&#34;] API --&gt; UserRouter[&#34;router/user_rt.py\n登录、注" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://wushao666.github.io/post/aiagent%E5%B7%A5%E4%BD%9C%E7%BB%8F%E5%8E%86%E5%A4%8D%E7%9B%98/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2026-01-13T21:16:26+08:00" />
-<meta property="article:modified_time" content="2026-04-14T13:53:49+08:00" />
+<meta property="og:url" content="http://wushao666.github.io/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2023-04-14T21:53:31+08:00" />
+<meta property="article:modified_time" content="2023-04-14T21:53:31+08:00" />
 
-<meta itemprop="name" content="AIAgent工作经历复盘">
-<meta itemprop="description" content="这个系列文章主要是复盘、总结、重新审视我在AIAgent领域的工作经历，从在完美世界做的游戏内个性化 NPC，以及鹅厂不算完美的代码生成平台，"><meta itemprop="datePublished" content="2026-01-13T21:16:26+08:00" />
-<meta itemprop="dateModified" content="2026-04-14T13:53:49+08:00" />
-<meta itemprop="wordCount" content="89">
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="AIAgent工作经历复盘"/>
-<meta name="twitter:description" content="这个系列文章主要是复盘、总结、重新审视我在AIAgent领域的工作经历，从在完美世界做的游戏内个性化 NPC，以及鹅厂不算完美的代码生成平台，"/>
+<meta itemprop="name" content="RAG系统设计">
+<meta itemprop="description" content="flowchart LR Client[&#34;前端/调用方&#34;] --&gt; API[&#34;FastAPI app_main:app&#34;] API --&gt; UserRouter[&#34;router/user_rt.py\n登录、注"><meta itemprop="datePublished" content="2023-04-14T21:53:31+08:00" />
+<meta itemprop="dateModified" content="2023-04-14T21:53:31+08:00" />
+<meta itemprop="wordCount" content="315">
+<meta itemprop="keywords" content="RAG," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RAG系统设计"/>
+<meta name="twitter:description" content="flowchart LR Client[&#34;前端/调用方&#34;] --&gt; API[&#34;FastAPI app_main:app&#34;] API --&gt; UserRouter[&#34;router/user_rt.py\n登录、注"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -129,12 +129,14 @@
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">AIAgent工作经历复盘</h1>
+      <h1 class="post-title">RAG系统设计</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2026-01-13 </span>
-        
-          <span class="more-meta"> 约 89 字 </span>
+        <span class="post-time"> 2023-04-14 </span>
+        <div class="post-category">
+            <a href="/categories/ai-llm/"> AI-LLM </a>
+            </div>
+          <span class="more-meta"> 约 315 字 </span>
           <span class="more-meta"> 预计阅读 1 分钟 </span>
         
       </div>
@@ -142,12 +144,41 @@
 
     <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  <div class="post-toc-content always-active">
+  <div class="post-toc-content">
     <nav id="TableOfContents"></nav>
   </div>
 </div>
     <div class="post-content">
-      <p>这个系列文章主要是复盘、总结、重新审视我在AIAgent领域的工作经历，从在完美世界做的游戏内个性化 NPC，以及鹅厂不算完美的代码生成平台，去年和完美世界领导重新做的 AI 女友项目。</p>
+      <pre class="mermaid">
+  
+flowchart LR
+    Client[&#34;前端/调用方&#34;] --&gt; API[&#34;FastAPI app_main:app&#34;]
+
+    API --&gt; UserRouter[&#34;router/user_rt.py\n登录、注册、STS Token&#34;]
+    API --&gt; ChatRouter[&#34;router/chat_rt.py\n会话、上传、解析、问答&#34;]
+    API --&gt; HistoryRouter[&#34;router/history_rt.py\n历史、文件列表、删除&#34;]
+
+    UserRouter --&gt; AuthService[&#34;service/auth.py&#34;]
+    ChatRouter --&gt; QuickParse[&#34;service/quick_parse_service.py&#34;]
+    ChatRouter --&gt; FileParse[&#34;service/core/file_parse.py&#34;]
+    ChatRouter --&gt; Retrieval[&#34;service/core/retrieval.py&#34;]
+    ChatRouter --&gt; ChatService[&#34;service/core/chat.py&#34;]
+    HistoryRouter --&gt; DocOps[&#34;service/document_operations.py&#34;]
+
+    AuthService --&gt; PG[(&#34;PostgreSQL\ngsk&#34;)]
+    QuickParse --&gt; Redis[(&#34;Redis\n临时文档内容&#34;)]
+    FileParse --&gt; ES[(&#34;Elasticsearch\n文档分片索引&#34;)]
+    Retrieval --&gt; ES
+    ChatService --&gt; Redis
+    ChatService --&gt; PG
+    DocOps --&gt; ES
+    DocOps --&gt; PG
+
+    ChatService --&gt; LLM[&#34;DashScope/OpenAI 兼容接口&#34;]
+    FileParse --&gt; Embedding[&#34;DashScope Embedding&#34;]
+
+</pre>
+
 
     </div>
 
@@ -159,23 +190,28 @@
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-        2026-04-14
-        <a href="/commit/fea8182689018450b83164e0c099f5b2cce17d70" title="feat: 更新">(fea8182)</a>
+        2023-04-14
+        
     </span>
   </p>
   
-  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content">MIT</span>
+  </p>
 </div>
 <footer class="post-footer">
-      
+      <div class="post-tags">
+          <a href="/tags/rag/">RAG</a>
+          </div>
       <nav class="post-nav">
-        <a class="prev" href="/post/%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B%E4%B9%8B%E6%89%8B%E5%86%99%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B601-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/">
+        <a class="prev" href="/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">古法编程之手写爬虫框架01-基础架构</span>
+            <span class="prev-text nav-default">BFF的服务端设计</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        <a class="next" href="/post/bff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/">
-            <span class="next-text nav-default">BFF层服务的前端工程化</span>
+        <a class="next" href="/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90%E6%A8%A1%E5%9D%97/">
+            <span class="next-text nav-default">RAG设计之文档解析模块</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
@@ -188,8 +224,8 @@
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2026-01-13 21:16:26 \u002b0800 CST',
-        title: 'AIAgent工作经历复盘',
+        id: '2023-04-14 21:53:31 \u002b0800 CST',
+        title: 'RAG系统设计',
         clientID: 'Ov23liIOS4xVWBCr8CiQ',
         clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
         repo: 'hugo-blog-comments',
@@ -248,6 +284,13 @@
 
 
 <script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
 
 
 
@@ -256,6 +299,11 @@
 
 
 
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
   
 </body>
 </html>

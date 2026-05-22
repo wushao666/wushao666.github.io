@@ -8,12 +8,30 @@
     <language>zh-Hans</language>
     <lastBuildDate>Fri, 14 Apr 2023 21:53:31 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/tags/rag/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>RAG探索</title>
-      <link>http://wushao666.github.io/post/rag%E5%AD%A6%E4%B9%A0-1/</link>
+      <title>RAG系统设计</title>
+      <link>http://wushao666.github.io/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</link>
       <pubDate>Fri, 14 Apr 2023 21:53:31 +0800</pubDate>
       
-      <guid>http://wushao666.github.io/post/rag%E5%AD%A6%E4%B9%A0-1/</guid>
+      <guid>http://wushao666.github.io/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</guid>
       <description>flowchart LR Client[&amp;#34;前端/调用方&amp;#34;] --&amp;gt; API[&amp;#34;FastAPI app_main:app&amp;#34;] API --&amp;gt; UserRouter[&amp;#34;router/user_rt.py\n登录、注</description>
+    </item>
+    
+    <item>
+      <title>RAG设计之文档解析模块</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90%E6%A8%A1%E5%9D%97/</link>
+      <pubDate>Tue, 21 Feb 2023 23:59:40 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90%E6%A8%A1%E5%9D%97/</guid>
+      <description>这块是真复杂啊</description>
+    </item>
+    
+    <item>
+      <title>RAG设计之快速上传文档解答</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%BF%AB%E9%80%9F%E4%B8%8A%E4%BC%A0%E6%96%87%E6%A1%A3%E8%A7%A3%E7%AD%94/</link>
+      <pubDate>Fri, 10 Feb 2023 20:39:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%BF%AB%E9%80%9F%E4%B8%8A%E4%BC%A0%E6%96%87%E6%A1%A3%E8%A7%A3%E7%AD%94/</guid>
+      <description>我们在 RAG 对话中，增加了一个快速上传文档的问答环节，但是设计上要求每个session_id只能上传一个文档 为什么呢？ 我们团队认为，RAG系统增</description>
     </item>
     
   </channel>
