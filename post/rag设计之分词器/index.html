@@ -1,0 +1,2686 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>RAG设计之分词器 - 吴少在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="沐桢" /><meta name="description" content="本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="RAG设计之分词器" />
+<meta property="og:description" content="本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-03-08T23:51:40+08:00" />
+<meta property="article:modified_time" content="2026-06-19T19:50:41+08:00" />
+
+<meta itemprop="name" content="RAG设计之分词器">
+<meta itemprop="description" content="本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝"><meta itemprop="datePublished" content="2024-03-08T23:51:40+08:00" />
+<meta itemprop="dateModified" content="2026-06-19T19:50:41+08:00" />
+<meta itemprop="wordCount" content="10598">
+<meta itemprop="keywords" content="RAG,分词器," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RAG设计之分词器"/>
+<meta name="twitter:description" content="本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">吴少在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">吴少在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">RAG设计之分词器</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2024-03-08 </span>
+        <div class="post-category">
+            <a href="/categories/ai-llm/"> AI-LLM </a>
+            </div>
+          <span class="more-meta"> 约 10598 字 </span>
+          <span class="more-meta"> 预计阅读 22 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#1-什么是分词器">1. 什么是分词器</a>
+          <ul>
+            <li><a href="#11-朴素的分词器">1.1 朴素的分词器</a></li>
+            <li><a href="#12-自定义字典">1.2 自定义字典</a></li>
+          </ul>
+        </li>
+        <li><a href="#2-自定义分词器">2. 自定义分词器</a>
+          <ul>
+            <li><a href="#20-字典分类设计">2.0 字典分类设计</a></li>
+            <li><a href="#21-按照词源优先级拆分">2.1 按照词源优先级拆分：</a></li>
+            <li><a href="#22-自动抽候选词">2.2 自动抽候选词</a></li>
+            <li><a href="#23-游戏词典格式">2.3 游戏词典格式</a></li>
+            <li><a href="#24-如何处理高频词">2.4 如何处理高频词</a></li>
+            <li><a href="#25-简单的代码示例">2.5 简单的代码示例</a></li>
+            <li><a href="#26-端到端检索测试">2.6 端到端检索测试</a></li>
+            <li><a href="#27-验收标准">2.7 验收标准</a></li>
+          </ul>
+        </li>
+        <li><a href="#3-工程优化">3. 工程优化</a>
+          <ul>
+            <li><a href="#31-字典的处理优化">3.1 字典的处理优化</a></li>
+            <li><a href="#32-怎么用-llm">3.2 怎么用 LLM</a>
+              <ul>
+                <li><a href="#约束-llm-的数据结构">约束 LLM 的数据结构</a></li>
+                <li><a href="#llm-实现">LLM 实现</a></li>
+              </ul>
+            </li>
+            <li><a href="#33-自定义分词器架构">3.3 自定义分词器架构</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝</p>
+<h2 id="1-什么是分词器">1. 什么是分词器</h2>
+<p>简而言之，分词器的主要任务是将文本分割成有意义的单词或短语，以便于计算机理解和处理。分词器在许多NLP任务中都有广泛的应用，比如文本分类、情感分析、机器翻译等。</p>
+<p>而在RAG系统的几个核心模块中：</p>
+<ul>
+<li>文档切块</li>
+<li>embedding</li>
+<li>检索</li>
+<li>rerank</li>
+<li>prompt 拼接</li>
+<li>LLM 回答</li>
+<li>引用回传</li>
+</ul>
+<p>很显然，检索模块很重要，查不到、查不准东西，这系统还有个屁用呀……其中分词器，就是检索模块的优化点之一！！！</p>
+<p>有人会说，现在都是 LLM的时代了，直接用向量索引、相似度计算，我只需要向量索引就挺好啊，分词器好像没什么用了呀：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">用户问题 -&gt; embedding
+文档 chunk -&gt; embedding
+向量相似度召回
+</code></pre></td></tr></table>
+</div>
+</div><p>但是在特定领域内，例如俺们的游戏场景下，很多特定名词、游戏术语，尤其是中文天然没有空格，例如用户问：“战士20级七杀阵和坐骑捕获培养怎么做?”，向量根据相似度计算容易把诛仙阵、坐骑合成都给你搞回来，而如果能用全文检索，就直击命门：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">战士
+20级
+七杀阵
+坐骑捕获培养
+</code></pre></td></tr></table>
+</div>
+</div><p>虽然你不用分词，向量查询也能做，但结果没有那么精准，尤其我们的游戏领域场景，大量的专有名词：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">七杀阵
+阪泉擂台赛
+坐骑捕获培养
+血盟据点战
+弑神进阶
+幻魔宫
+万劫窟
+装备易魂
+</code></pre></td></tr></table>
+</div>
+</div><p>所以啊，检索必然是混合检索模式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">query
+ -&gt; 分词全文检索 content_ltks/content_sm_ltks
+ -&gt; embedding 向量检索 q_1024_vec
+ -&gt; 合并召回
+ -&gt; rerank
+ -&gt; LLM 生成答案
+</code></pre></td></tr></table>
+</div>
+</div><p>这也是为什么分词越来越重要的原因了，如果你用 ES 做全文检索，非常依赖content_ltks/content_sm_ltks，一个粗粒度内容、一个细粒度内容，而这两个字段，就是通过分词器生成的。</p>
+<p>我们目前的做法就是原文 chunk会同时包含多部分：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;content_with_weight&#34;</span><span class="p">:</span> <span class="s2">&#34;战士20级七杀阵和坐骑捕获培养怎么做?&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;content_ltks&#34;</span><span class="p">:</span> <span class="s2">&#34;战士 20级七杀阵 和 坐骑捕获培养 怎么 做&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;content_sm_ltks&#34;</span><span class="p">:</span> <span class="s2">&#34;战士 20级 七杀阵 七杀 杀阵 和 坐骑 骑捕 捕获 获培 培养 怎么 做&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;q_1024_vec&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.23</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>而中文又没有空格，程序不知道一句话到底啥意思，如何更好的分词呢？接下来进入正文</p>
+<h3 id="11-朴素的分词器">1.1 朴素的分词器</h3>
+<p>最常见的库，就是 jieba 了，他的分词原理不学 NLP 的话，大概了解一下就行：他内部有一个巨大的词典，包含词和词频，类似于：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">数据分析 词频
+项目经理 词频
+Python 词频
+后端 词频
+开发 词频
+</code></pre></td></tr></table>
+</div>
+</div><p>他从第一个汉字开始查词典，它会把所有可能切法组成一个 DAG，有向无环图。然后从 DAG 中找到权重最大的路径，就是分词结果。例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">数据 / 分析 / 项目 / 经理
+数据分析 / 项目经理
+数据 / 分析项目 / 经理
+</code></pre></td></tr></table>
+</div>
+</div><p>如果遇到没有的词时，怎么办呢？默认会用隐式马尔科夫链HMM 模型通过概率预测寻找，研究生的随机过程专业课又来攻击我了😭，总之就是这样。</p>
+<p>所以当我们</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">jieba</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">jieba</span><span class="o">.</span><span class="n">lcut</span><span class="p">(</span><span class="s2">&#34;南京市长江大桥&#34;</span><span class="p">))</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>结果通常是:<code>['南京市', '长江大桥']</code>，而不是会[&lsquo;南京&rsquo;, &lsquo;市长&rsquo;, &lsquo;江大桥&rsquo;]，因为词典中前面那条路径权重更大。
+回到我们的游戏场景：
+<img src="/RAG/1.png" alt="问题 1"></p>
+<p>很明显，&ldquo;战士20级七杀阵和坐骑捕获培养怎么做&rdquo;，我们期望“20 级”、“七杀阵”是完整名词，不能分开，仅仅靠简单的第三方库无法高命中率，何况我们那么多游戏专业名词，他根本就分不出来。 最起码我们要做到：
+<img src="/RAG/2.png" alt="问题 1"></p>
+<p>这也能看出来分词的目标：<strong>尽可能偏完整的词、拆出更多召回的词</strong></p>
+<p>要做到这一点，我们面临几个问题：</p>
+<ol>
+<li>可能需要自定义字典</li>
+<li>字典来源是什么</li>
+<li>如何构建字典</li>
+<li>中英文混杂的问题中，技术词、英文、数字是否稳定？</li>
+<li>构建字典后，如何评估这套分词合格</li>
+<li>等等</li>
+</ol>
+<p>总之，分词没有唯一标准，关键看“检索是否更容易命中、RAG 能不能召回正确 chunk”。
+这些问题我们一个一个的来解决：</p>
+<h3 id="12-自定义字典">1.2 自定义字典</h3>
+<p>所谓的自定义字典，就是一个 txt 或者 trie树，里面包含所有我们需要的词，例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">词 频率 词性
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="/RAG/3.png" alt="问题 1"></p>
+<p>一般来说，词性设置简单：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">n   名词
+nr  人名/专名
+ns  地名
+v   动词
+a   形容词
+m   数量词
+eng 英文词
+</code></pre></td></tr></table>
+</div>
+</div><p>领域词大多数直接写 n 就够了。</p>
+<p>做这个字典，一般是 人工种子词 + 文档自动抽取 + 人工筛选/校正 三步做出来的（也可以用自动工作流或者 llm 提取），业务逻辑处理大概是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">准备领域文档
+ -&gt; 自动抽取候选词
+ -&gt; 统计词频
+ -&gt; 人工筛掉垃圾词
+ -&gt; 补充核心业务词
+ -&gt; 生成 user_dict.txt
+ -&gt; 加载到 tokenizer
+ -&gt; 用检索效果反复调整
+
+</code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>人工种子词可以是业务方提供，也可以是运营同学提供，也可以是运营同学从文档里抽取，也可能是爬取的，总之就是数据来源多样，但是格式统一。</li>
+<li>可以使用从上述来源中，用jieba.analyse、textrank、TF-IDF、n-gram 等等方式抽抽选词</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 极简示例</span>
+<span class="kn">import</span> <span class="nn">jieba.analyse</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+
+<span class="k">def</span> <span class="nf">extract_terms_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&#34;utf-8&#34;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&#34;ignore&#34;</span><span class="p">)</span>
+        <span class="n">terms</span> <span class="o">=</span> <span class="n">jieba</span><span class="o">.</span><span class="n">analyse</span><span class="o">.</span><span class="n">extract_tags</span><span class="p">(</span>
+            <span class="n">text</span><span class="p">,</span>
+            <span class="n">topK</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+            <span class="n">withWeight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">allowPOS</span><span class="o">=</span><span class="p">(</span><span class="s2">&#34;n&#34;</span><span class="p">,</span> <span class="s2">&#34;nr&#34;</span><span class="p">,</span> <span class="s2">&#34;ns&#34;</span><span class="p">,</span> <span class="s2">&#34;nt&#34;</span><span class="p">,</span> <span class="s2">&#34;nz&#34;</span><span class="p">,</span> <span class="s2">&#34;vn&#34;</span><span class="p">,</span> <span class="s2">&#34;eng&#34;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">counter</span>
+
+
+<span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&#34;docs/a.txt&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;docs/b.txt&#34;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">terms</span> <span class="o">=</span> <span class="n">extract_terms_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">terms</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&#34;n&#34;</span><span class="p">)</span>
+
+<span class="c1"># 弑神修炼 5000 n</span>
+<span class="c1"># 护具制作 5000 n</span>
+<span class="c1"># 武器打造 5000 n</span>
+<span class="c1"># 炼金制作 5000 n</span>
+<span class="c1"># 符文制作 5000 n</span>
+<span class="c1"># 血盟任务 5000 n</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li>至于上面的词频怎么填，其实没有啥金标准，它本质是告诉分词器“这个词重要”。</li>
+<li>词性按照准备的词表填即可</li>
+<li>人工筛选很重要！！！要去除噪声词，例如会抽出下面这些:</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">本文
+进行
+通过
+以及
+相关
+结果显示
+</code></pre></td></tr></table>
+</div>
+</div><p>这些词如果进词典，会污染检索。所以要人工筛一遍。
+更好的方式是做两个文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">domain_userdict.txt      # 要加入的领域词
+domain_stopwords.txt     # 不要加入的停用词
+</code></pre></td></tr></table>
+</div>
+</div><ol start="6">
+<li>大概得处理流程：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">jieba.analyse</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+
+
+<span class="n">STOPWORDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;本文&#34;</span><span class="p">,</span> <span class="s2">&#34;进行&#34;</span><span class="p">,</span> <span class="s2">&#34;通过&#34;</span><span class="p">,</span> <span class="s2">&#34;以及&#34;</span><span class="p">,</span> <span class="s2">&#34;相关&#34;</span><span class="p">,</span> <span class="s2">&#34;结果&#34;</span><span class="p">,</span> <span class="s2">&#34;显示&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;研究&#34;</span><span class="p">,</span> <span class="s2">&#34;分析&#34;</span><span class="p">,</span> <span class="s2">&#34;使用&#34;</span><span class="p">,</span> <span class="s2">&#34;方法&#34;</span><span class="p">,</span> <span class="s2">&#34;系统&#34;</span><span class="p">,</span>
+    <span class="c1"># 总之，你有你的停用词domain_stopwords.txt</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">clean_word</span><span class="p">(</span><span class="n">word</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">word</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">STOPWORDS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;\d+&#34;</span><span class="p">,</span> <span class="n">word</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">extract_domain_dict</span><span class="p">(</span><span class="n">input_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="o">...</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">&#34;w&#34;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counter</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">9000</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">count</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">freq</span><span class="si">}</span><span class="s2"> n</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+
+
+<span class="n">extract_domain_dict</span><span class="p">(</span>
+    <span class="n">input_dir</span><span class="o">=</span><span class="s2">&#34;docs&#34;</span><span class="p">,</span>
+    <span class="n">output_file</span><span class="o">=</span><span class="s2">&#34;domain_userdict.txt&#34;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>以上是通用的处理，接下来是重头戏，分享一下我们游戏领域的自定义处理：</p>
+<h2 id="2-自定义分词器">2. 自定义分词器</h2>
+<p>为了给我们服务于游戏场景下的 RAG 系统服务，我们的分词器也做了单独的设计：</p>
+<h3 id="20-字典分类设计">2.0 字典分类设计</h3>
+<p>首先是字典分类，这步很重要，我们把游戏内的词典分为了六类：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">1. 游戏专名：游戏名、简称、资料片名、版本名
+2. 角色体系：职业、门派、种族、阵营、NPC、主角名
+3. 玩法系统：副本、任务、帮派、师门、宠物、坐骑、装备强化、交易、PK
+4. 数值属性：攻击、防御、法攻、暴击、命中、闪避、气血、法力、抗性
+5. 道具技能：装备名、技能名、材料名、药品名、宝石名、召唤兽名
+6. 玩家黑话：简称、别名、缩写、俗称，比如 “战士/战”、“法师/法”、“副本/本”
+</code></pre></td></tr></table>
+</div>
+</div><p>词性：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">eng：英文词
+ns：地图/地点，如 通天塔、幻魔宫、万劫窟
+nr：角色/BOSS/职业倾向，如 战士、法师、世界boss
+n：默认名词
+</code></pre></td></tr></table>
+</div>
+</div><p>除了运营、市场、策划、游戏侧给出的文本资料,我们可以直接文档处理提取的:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">1. 官方资料库
+   职业、技能、装备、任务、副本、NPC、地图、道具、活动
+
+2. 结构化业务数据
+   数据库表、配置表、Excel、后台 CMS、商品/道具/技能配置
+
+3. 文档语料自动抽取
+   FAQ、攻略、公告、客服问答、wiki、论坛精品帖
+
+4. 搜索日志
+   用户真实搜索词、未命中 query、低点击 query
+
+5. 问答日志
+   用户问法、LLM 回答失败问题、人工客服转写问题
+
+6. 同义词和黑话
+   玩家简称、俗称、缩写、拼音、错别字
+
+7. 人工专家维护
+   运营、策划、客服、领域专家审核
+
+</code></pre></td></tr></table>
+</div>
+</div><p>但是有的老项目依赖的一些原始文档不全，只有网页了，对于反爬不厉害的，我们单独做了爬虫服务，单独处理：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">游戏资料站/wiki/营销活动页
+ -&gt; 爬取栏目页
+ -&gt; 提取标题、表格、列表、加粗词、导航词
+ -&gt; 清洗候选词
+ -&gt; 合并同义词/别名
+ -&gt; 生成人工可审查的 domain_userdict.txt
+ -&gt; 加载进 tokenizer
+ -&gt; 重新入库文档
+ -&gt; 用真实问题测召回
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="21-按照词源优先级拆分">2.1 按照词源优先级拆分：</h3>
+<p>优先处理下面这些</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">职业/门派
+技能
+装备
+道具
+副本
+任务
+宠物/召唤兽
+坐骑
+地图
+NPC
+怪物
+系统玩法
+版本资料片
+新手指南
+FAQ
+</code></pre></td></tr></table>
+</div>
+</div><p>这些页面里的标题、表格第一列、技能名、装备名、NPC 名，都是高价值领域词！！！</p>
+<h3 id="22-自动抽候选词">2.2 自动抽候选词</h3>
+<p>不能单纯的靠extract_tags()。应该按照某种格式进行：“结构化抽取 + 统计抽取”结合。
+优先级从高到低：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">页面 title
+h1/h2/h3 标题
+导航菜单文本
+表格 th/td，尤其第一列
+列表 li
+加粗 strong/b
+链接文本 a
+正文里的高频 n-gram
+</code></pre></td></tr></table>
+</div>
+</div><p>比如页面里有表格：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">技能名称 | 技能类型 | 学习等级 | 技能说明
+烈火剑法 | 主动技能 | 35 | 对目标造成高额物理伤害
+</code></pre></td></tr></table>
+</div>
+</div><p>按照约定的结构，应该直接抽：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">烈火剑法
+主动技能
+学习等级
+物理伤害
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="23-游戏词典格式">2.3 游戏词典格式</h3>
+<p>我们游戏内，按照</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">职业/门派/种族/阵营：9000 n
+技能名：9000 n
+装备名：8500 n
+副本名：8500 n
+NPC/角色名：8000 nr
+地图名：7500 ns
+材料/道具名：7000 n
+玩法系统名：6000 n
+玩家简称/黑话：5000 n
+</code></pre></td></tr></table>
+</div>
+</div><p>其中游戏内 RAG 不同的一点是，玩家的问法和官方很不一样，口语化的太多了，需要额外维护一张别名表：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">战 战士
+法 法师
+道 道士
+宝宝 召唤兽
+本 副本
+红药 生命药水
+蓝药 法力药水
+强化 装备强化
+</code></pre></td></tr></table>
+</div>
+</div><p>最终形成：
+<img src="/RAG/4.png" alt="同名"></p>
+<hr>
+<p>📢注意：有一些人的做法是，将同名词典追加到主词典中，形成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">战士 9000 n
+战 5000 n
+法师 9000 n
+法 5000 n
+召唤兽 8000 n
+宝宝 6000 n
+副本 8000 n
+本 5000 n
+</code></pre></td></tr></table>
+</div>
+</div><p>但是经过测试，有时候同义词命中率不是很理想，我觉得更好的做法是：</p>
+<ul>
+<li>词典负责“不切坏”</li>
+<li>同义词表负责“查询扩展”
+也就是说，当用户问：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">宝宝怎么升级？
+</code></pre></td></tr></table>
+</div>
+</div><p>query 扩展成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">宝宝 OR 召唤兽 OR 宠物
+</code></pre></td></tr></table>
+</div>
+</div><p>同义词词典，不应该杂糅到大辞典中，应该作为 query 的优化点——expansion query，增强 query召回，<strong>这样比只靠词典更稳</strong>。</p>
+<hr>
+<h3 id="24-如何处理高频词">2.4 如何处理高频词</h3>
+<p>前面通用处理说了，有的高频词是噪声，会污染检索，人工检查时，应该剔除，例如下列词尽量不进入领域词典：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">获得
+等级
+任务
+...
+</code></pre></td></tr></table>
+</div>
+</div><p>但是，在游戏中，上述的词会和游戏进行组合，形成有效的领域词，这点是要注意的，例如游戏内的组合词：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">获得经验
+宝石等级
+学习等级
+主线任务
+日常任务
+师门任务
+...
+</code></pre></td></tr></table>
+</div>
+</div><p>这些组合词，在实际测试中发现，需要被召回的，比单个泛词更有价值，所以需要保留。</p>
+<p>！！！这一点，也是以后做不同领域的分词器时，需要考虑的，<strong>如何平衡高频词和泛词</strong>。</p>
+<h3 id="25-简单的代码示例">2.5 简单的代码示例</h3>
+<p>伪代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span><span class="lnt">95
+</span><span class="lnt">96
+</span><span class="lnt">97
+</span><span class="lnt">98
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">HIGH_VALUE_SELECTORS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&#34;title&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;h1&#34;</span><span class="p">,</span> <span class="s2">&#34;h2&#34;</span><span class="p">,</span> <span class="s2">&#34;h3&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;th&#34;</span><span class="p">,</span> <span class="s2">&#34;td&#34;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">]</span>
+
+<span class="n">STOPWORDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># 停用词设计，优化点之一</span>
+    <span class="s2">&#34;首页&#34;</span><span class="p">,</span> <span class="s2">&#34;更多&#34;</span><span class="p">,</span> <span class="s2">&#34;返回&#34;</span><span class="p">,</span> <span class="s2">&#34;下载&#34;</span><span class="p">,</span> <span class="s2">&#34;注册&#34;</span><span class="p">,</span> <span class="s2">&#34;登录&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;可以&#34;</span><span class="p">,</span> <span class="s2">&#34;需要&#34;</span><span class="p">,</span> <span class="s2">&#34;进行&#34;</span><span class="p">,</span> <span class="s2">&#34;相关&#34;</span><span class="p">,</span> <span class="s2">&#34;介绍&#34;</span><span class="p">,</span> <span class="s2">&#34;说明&#34;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">clean_term</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="c1"># 前置数据清洗方法</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;\s+&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">text</span> <span class="ow">or</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;[：:，,。.!！?？()\[\]【】&lt;&gt;《》]&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span>
+
+<span class="k">def</span> <span class="nf">is_good_term</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+    <span class="c1"># 过滤噪声词，很重要，是优化点之一</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">extract_terms_from_html</span><span class="p">(</span><span class="n">html</span><span class="p">):</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s2">&#34;html.parser&#34;</span><span class="p">)</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">selector</span> <span class="ow">in</span> <span class="n">HIGH_VALUE_SELECTORS</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">selector</span><span class="p">):</span>
+            <span class="n">term</span> <span class="o">=</span> <span class="n">clean_term</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get_text</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">is_good_term</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+                <span class="n">counter</span><span class="p">[</span><span class="n">term</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">3</span>
+
+    <span class="n">text</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;[\u4e00-\u9fa5A-Za-z0-9]{2,12}&#34;</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">term</span> <span class="o">=</span> <span class="n">clean_term</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_good_term</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+            <span class="n">counter</span><span class="p">[</span><span class="n">term</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">counter</span>
+
+<span class="k">def</span> <span class="nf">guess_pos</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+    <span class="c1"># 词性判断</span>
+    <span class="k">if</span> <span class="n">term</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&#34;城&#34;</span><span class="p">,</span> <span class="s2">&#34;村&#34;</span><span class="p">,</span> <span class="s2">&#34;山&#34;</span><span class="p">,</span> <span class="s2">&#34;谷&#34;</span><span class="p">,</span> <span class="s2">&#34;洞&#34;</span><span class="p">,</span> <span class="s2">&#34;宫&#34;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="s2">&#34;ns&#34;</span>
+    <span class="k">if</span> <span class="n">term</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&#34;王&#34;</span><span class="p">,</span> <span class="s2">&#34;魔&#34;</span><span class="p">,</span> <span class="s2">&#34;仙&#34;</span><span class="p">,</span> <span class="s2">&#34;神&#34;</span><span class="p">,</span> <span class="s2">&#34;妖&#34;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="s2">&#34;nr&#34;</span>
+    <span class="k">return</span> <span class="s2">&#34;n&#34;</span>
+<span class="c1"># 打分权重 按照业务讨论的领域定制</span>
+<span class="n">SOURCE_WEIGHTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;title&#34;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="s2">&#34;keywords&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&#34;heading&#34;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+    <span class="s2">&#34;link&#34;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="s2">&#34;table&#34;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="s2">&#34;strong&#34;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="s2">&#34;list&#34;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&#34;jieba&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="c1"># title 里的词 +12 分</span>
+<span class="c1"># meta keywords 里的词 +10 分</span>
+<span class="c1"># h1-h5 标题里的词 +9 分</span>
+<span class="c1"># 链接文本里的词 +7 分</span>
+<span class="c1"># 表格里的词 +6 分</span>
+<span class="c1"># 加粗词 +6 分</span>
+<span class="c1"># 列表项 +5 分</span>
+<span class="c1"># jieba 提取正文中的关键词 +2 分</span>
+<span class="k">def</span> <span class="nf">add_term</span><span class="p">(</span>
+    <span class="n">scores</span><span class="p">:</span> <span class="n">Counter</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+    <span class="c1"># 根据权重，加分</span>
+    <span class="n">scores</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span> <span class="o">+=</span> <span class="n">SOURCE_WEIGHTS</span><span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="o">*</span> <span class="n">multiplier</span>
+    <span class="n">sources</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="o">...</span>
+<span class="k">def</span> <span class="nf">calc_freq</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+    <span class="c1"># 词频推断 示例</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">9000</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">7000</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">5000</span>
+    <span class="k">return</span> <span class="mi">3000</span>
+
+<span class="k">def</span> <span class="nf">write_userdict</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s2">&#34;w&#34;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">term</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counter</span><span class="o">.</span><span class="n">most_common</span><span class="p">():</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="n">calc_freq</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">guess_pos</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">term</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">freq</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>最终生成多个词典：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">rag/res/game_userdict.txt        # 游戏领域词典
+rag/res/game_synonyms.txt        # 玩家黑话/别名
+rag/res/game_stopwords.txt       # 垃圾词
+rag/res/game_terms_review.csv    # 人工审核候选词
+</code></pre></td></tr></table>
+</div>
+</div><p>总结下来就是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">清洗垃圾词
+= clean_text() + is_good_term() + STOPWORDS + NOISE_PATTERNS
+
+给候选词打分
+= SOURCE_WEIGHTS + add_term() + Counter 累加
+
+推断词频和词性
+= score_to_freq() + guess_pos()
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="26-端到端检索测试">2.6 端到端检索测试</h3>
+<p>有人可能会觉得词典越大越好，实际并不是的，需要平衡性能和效果，如果词典太大，检索性能会下降，召回效果也会下降。
+我们的业务场景中，游戏领域词典来源占比分配是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">官方资料站结构化抽取 70%
+玩家黑话/简称人工补充 20%
+召回测试后迭代修正 10%
+</code></pre></td></tr></table>
+</div>
+</div><p>👨🏻‍💻 要记住分词器核心原则：不要只看词典数量，要看RAG 能不能召回正确 chunk！！！
+测试方式大概如下：</p>
+<ol>
+<li>按照项目要求，准备好测试文档，测试问题应该覆盖玩家真实问法：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">战士怎么加点？
+宝宝怎么升级？
+哪个副本掉高级装备？
+装备强化失败会怎么样？
+法师前期带什么技能？
+帮派任务在哪里接？
+...
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>入库后看 ES 中每个 chunk 的字段：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">content_with_weight
+content_ltks
+content_sm_ltks
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li>看 top 5 召回结果是否包含正确 chunk。
+例如文档里有：
+<code>血盟据点战在幽冥库地下一层 拐角处、血魔战场入口处。</code>
+测试问题：
+我怎么打血盟战？</li>
+</ol>
+<ul>
+<li>如果召回 top 结果里有这段，说明 tokenizer + ES 检索是有效的。</li>
+<li>如果召回不到：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">1. 看 query 有没有被正确分词
+2. 看文档 content_ltks 有没有对应词
+3. 看 content_sm_ltks 有没有兜底词
+4. 看别名是否缺失
+5. 看是不是领域词没进 userdict
+</code></pre></td></tr></table>
+</div>
+</div><p>所以好用的 tokenizer 应该满足：</p>
+<ul>
+<li>重要业务词不要被过度拆碎。</li>
+<li>用户问题里的关键词能和文档 token 对上。
+content_ltks 偏精准。
+content_sm_ltks 能补召回。</li>
+<li>英文技术词、数字、小数、版本号不要乱。</li>
+</ul>
+<h3 id="27-验收标准">2.7 验收标准</h3>
+<p>基于上一节的分词器的测试原则，我们设计了 4 层验收标准：</p>
+<p><strong>1. 文件格式验收</strong>
+目标：证明 xxx_userdict.txt、*.txt 能被 tokenizer 加载。
+验收标准：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">每行必须是：词 频率 词性
+词不能为空
+频率必须是数字
+不能有 HTML 标签
+不能有 URL
+不能有纯数字词
+不能有空格词
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>2. 核心词覆盖验收</strong>
+目标：证明资料站里的核心游戏词被抽到了。
+和运营、策划，一起讨论，制定一个我们领域内的 gold list：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">七杀阵
+阪泉擂台赛
+坐骑捕获培养
+血盟据点战
+坐骑系统
+血盟系统
+装备强化
+通天塔
+九幽界战场
+...
+</code></pre></td></tr></table>
+</div>
+</div><p>验收指标：
+<code>核心词覆盖率 = 命中的核心词数量 / gold list 总数</code></p>
+<p>例如我们问：“战士20级七杀阵和坐骑捕获培养怎么做”，
+必须命中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">七杀阵
+坐骑捕获培养
+战士
+战
+</code></pre></td></tr></table>
+</div>
+</div><p>验收标准：<code>核心词覆盖率 &gt;= 90%</code></p>
+<p><strong>3. 分词效果验收</strong></p>
+<p>目标：证明加载词典后，领域词不会被切碎。</p>
+<p>例如测试句：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">战士20级七杀阵和坐骑捕获培养怎么做
+</code></pre></td></tr></table>
+</div>
+</div><p>不用词典：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">战士 20 级 七 杀阵 和 坐骑 捕获 培养 怎么 做
+</code></pre></td></tr></table>
+</div>
+</div><p>加载词典后：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">战士 20级七杀阵 和 坐骑捕获培养 怎么 做
+</code></pre></td></tr></table>
+</div>
+</div><p>说明我们的核心领域词：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">20级七杀阵
+坐骑捕获培养
+</code></pre></td></tr></table>
+</div>
+</div><p>被保护成完整词。</p>
+<p>验收指标：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">领域词保护率 = 保持完整的领域词数量 / 测试领域词总数
+</code></pre></td></tr></table>
+</div>
+</div><p>验收标准：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">领域词保护率 &gt;= 90%
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>4. 词典质量验收</strong></p>
+<p>这个最重要。因为总有一些意外情况，看似有些词虽然格式正确，但质量一般，比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">被神化的史诗传说
+超大规模的万人城战
+轩辕传奇官方网站
+进入轩辕传奇官方网站
+</code></pre></td></tr></table>
+</div>
+</div><p>这些偏营销词，不一定适合进最终词典。</p>
+<p>所以要看 <code>xxx_review.csv</code>，人工标注前 xxx 个词：
+<img src="/RAG/6.png" alt=""></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">good：游戏实体/玩法/系统/职业/任务/副本/装备
+bad：营销词/导航词/泛词/半截词
+</code></pre></td></tr></table>
+</div>
+</div><p>验收指标：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Top100 精准率 = Top100 中 good 数量 / 100
+</code></pre></td></tr></table>
+</div>
+</div><p>建议标准：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Top100 精准率 &gt;= 80%
+</code></pre></td></tr></table>
+</div>
+</div><p>如果低于 80%，继续加停用词或调低某些来源权重，比如 <code>keywords</code> 里容易出营销词。</p>
+<p><strong>5. RAG 召回验收</strong>
+又回到上一节我们的测试原则上了，再复习一遍：</p>
+<p><strong>最终不是看词典漂亮，而是看检索能不能召回正确 chunk。</strong></p>
+<p>测试问题：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">战士20级做什么任务？
+七杀阵怎么玩？
+坐骑捕获培养在哪里？
+血盟据点战怎么参加？
+阪泉擂台赛有什么奖励？
+法师推荐装备是什么？
+...
+</code></pre></td></tr></table>
+</div>
+</div><p>入库后看 ES top k。</p>
+<p>指标：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Hit@5 = 前 5 个召回结果中是否包含正确资料 chunk
+MRR = 正确 chunk 排名越靠前越好
+</code></pre></td></tr></table>
+</div>
+</div><p>验收标准：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Hit@5 &gt;= 80%
+MRR &gt;= 0.5
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<p>其中关于这个倒数排名为啥才 0.5呀，我查了相关资料，算法同学也说了，这是工程经验值，并不像我一开始以为的越高越好🤣</p>
+<p>绝大多数检索/问答/推荐场景，用户只会看<strong>前1、前2条</strong>：</p>
+<ul>
+<li>MRR &gt; 0.5：合格
+正确结果普遍在前两位，用户不用翻很多条，业务可用；</li>
+<li>MRR = 0.3~0.5：勉强能用，体验一般，经常要往下翻；</li>
+<li>MRR &lt; 0.3：不合格，平均正确答案掉到第3名及以后，用户大概率划走、找不到答案，体验崩盘。</li>
+</ul>
+<p>很多检索、RAG、问答数据集（如MS MARCO、FAQ检索、文档召回）通用经验基线：</p>
+<ul>
+<li>入门基线：MRR ≥ 0.5</li>
+<li>良好模型：MRR ≥ 0.7~0.8（大量样本命中第1位）</li>
+<li>优秀模型：MRR ≥ 0.9（绝大多数正确结果置顶）</li>
+</ul>
+<p>MRR≥0.5 本质是一条<strong>用户体验硬门槛</strong>：
+平均意义上，正确答案至少稳定出现在返回列表前两位，不会大量落到第三名及以后，业务场景下才算具备使用价值，因此被广泛定为合格标准。</p>
+<hr>
+<p><strong>我们的验收表</strong></p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th style="text-align:right">指标</th>
+<th style="text-align:right">合格标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文件格式</td>
+<td style="text-align:right">坏行数</td>
+<td style="text-align:right">0</td>
+</tr>
+<tr>
+<td>抓取覆盖</td>
+<td style="text-align:right">成功页面数</td>
+<td style="text-align:right">&gt;= 目标 max-pages 的 90%</td>
+</tr>
+<tr>
+<td>核心词覆盖</td>
+<td style="text-align:right">gold list 命中率</td>
+<td style="text-align:right">&gt;= 90%</td>
+</tr>
+<tr>
+<td>分词保护</td>
+<td style="text-align:right">领域词完整保留率</td>
+<td style="text-align:right">&gt;= 90%</td>
+</tr>
+<tr>
+<td>词典质量</td>
+<td style="text-align:right">Top100 人工精准率</td>
+<td style="text-align:right">&gt;= 80%</td>
+</tr>
+<tr>
+<td>RAG 效果</td>
+<td style="text-align:right">Hit@5</td>
+<td style="text-align:right">&gt;= 80%</td>
+</tr>
+<tr>
+<td>RAG 效果</td>
+<td style="text-align:right">MRR</td>
+<td style="text-align:right">&gt;= 0.5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-工程优化">3. 工程优化</h2>
+<p>以上两节基本介绍完了分词器，咋处理，本节主要讲讲工程优化，其实项目做起来，从软件开发的角度来说，本节才是核心呀。</p>
+<h3 id="31-字典的处理优化">3.1 字典的处理优化</h3>
+<p>这部分其实，我觉得有点啰嗦了，在 2.1 节其实讲的不少了，但是为啥我还想单独记录呢，因为在做的过程中，其实这部分花时间精力可不少，尝试了多个渠道和对比方法，当结果不是很理想时，万万没想到源头字典上还大有动手空间呀，尤其是做完之后，也只能感叹一句，谁做谁知道，一家一个样🤣🤣🤣
+我们的经验来说，就四种方式处理数据，并生成字典：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">1. 官方配置数据
+ -&gt; 规则抽取 name 字段
+ -&gt; 直接进入高置信词典
+
+2. 官方资料站
+ -&gt; HTML 结构抽取
+ -&gt; 打分
+ -&gt; 进入审核表
+
+3. 搜索日志/玩家问法
+ -&gt; 高频 query / 未命中 query
+ -&gt; 与官方词匹配
+ -&gt; 生成同义词候选
+
+4. 攻略/FAQ/论坛
+ -&gt; TF-IDF/TextRank/LLM 抽实体
+ -&gt; 低置信候选
+ -&gt; 人工审核
+
+人工审核
+ -&gt; userdict.txt
+ -&gt; synonyms.txt
+ -&gt; stopwords.txt
+ -&gt; versioned dictionary
+</code></pre></td></tr></table>
+</div>
+</div><p>而且啊，经验告诉我：<strong>能用结构化字段解决的，不要先上模型。</strong>
+稍微展开上面的四种格式处理方法：</p>
+<p><strong>1. 官方配置数据</strong></p>
+<p>这是最高质量来源。比如游戏内部有：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">skill_config.csv
+item_config.csv
+monster_config.csv
+npc_config.csv
+map_config.csv
+quest_config.csv
+activity_config.csv
+</code></pre></td></tr></table>
+</div>
+</div><p>字段处理的完美极了😄：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">id,name,type,level,desc
+1001,七杀阵,副本,20,20级开放的组队玩法
+2001,坐骑捕获培养,系统,25,坐骑捕获与培养说明
+3001,赤焰剑,装备,30,战士武器
+</code></pre></td></tr></table>
+</div>
+</div><p>喜大普奔呀，我直接取 <code>name</code> 字段，再根据表名/类型生成词性和频率。</p>
+<p>例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">TABLE_RULES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;skill_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;n&#34;</span><span class="p">,</span> <span class="mi">9000</span><span class="p">),</span>
+    <span class="s2">&#34;item_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;n&#34;</span><span class="p">,</span> <span class="mi">8500</span><span class="p">),</span>
+    <span class="s2">&#34;monster_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;nr&#34;</span><span class="p">,</span> <span class="mi">8500</span><span class="p">),</span>
+    <span class="s2">&#34;npc_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;nr&#34;</span><span class="p">,</span> <span class="mi">8500</span><span class="p">),</span>
+    <span class="s2">&#34;map_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;ns&#34;</span><span class="p">,</span> <span class="mi">8500</span><span class="p">),</span>
+    <span class="s2">&#34;quest_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;n&#34;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">),</span>
+    <span class="s2">&#34;activity_config.csv&#34;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&#34;n&#34;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">),</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>生成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">七杀阵 9000 n
+坐骑捕获培养 9000 n
+赤焰剑 8500 n
+赤月恶魔 8500 nr
+比奇城 8500 ns
+</code></pre></td></tr></table>
+</div>
+</div><p>这种不需要模型，规则最稳。</p>
+<p><strong>2. 官方资料站结构化字段</strong></p>
+<p>资料站虽然是 HTML，但里面有结构。</p>
+<p>优先抽：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">title
+h1/h2/h3/h4/h5
+表格第一列
+a 标签文本
+导航栏目
+列表标题
+strong/b
+meta keywords
+</code></pre></td></tr></table>
+</div>
+</div><p>比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="p">&lt;</span><span class="nt">h5</span><span class="p">&gt;</span>七杀阵<span class="p">&lt;/</span><span class="nt">h5</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">a</span><span class="p">&gt;</span>坐骑捕获培养<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">td</span><span class="p">&gt;</span>血盟据点战<span class="p">&lt;/</span><span class="nt">td</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这些可以直接当候选词。</p>
+<p>处理方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">抽结构化字段
+ -&gt; 清洗导航词/营销词
+ -&gt; 按来源打分
+ -&gt; 输出 review.csv
+ -&gt; 人工确认
+ -&gt; 进入 userdict
+</code></pre></td></tr></table>
+</div>
+</div><p>这两部分就是我们 2.1节做的事情，事实证明，这些工作虽然繁琐，但是很有意义呀！！！</p>
+<p><strong>3. 搜索日志/玩家问法</strong></p>
+<p>搜索日志，游戏侧给出来的长这样：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">query,count,clicked_doc,has_answer
+宝宝怎么升级,123,召唤兽培养,false
+七杀怎么打,98,七杀阵攻略,true
+战士加点,80,战士职业攻略,true
+坐骑在哪抓,56,坐骑捕获培养,true
+</code></pre></td></tr></table>
+</div>
+</div><p>这里成分是不是有点复杂呀，不过我们主要用来生成两类东西：</p>
+<ol>
+<li>领域词典</li>
+<li>同义词/别名表</li>
+</ol>
+<p>处理方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">高频 query
+ -&gt; 分词
+ -&gt; 抽 n-gram
+ -&gt; 找未命中 query
+ -&gt; 和官方词做相似匹配
+ -&gt; 生成人工审核表
+</code></pre></td></tr></table>
+</div>
+</div><p>例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">宝宝怎么升级 -&gt; 宝宝
+</code></pre></td></tr></table>
+</div>
+</div><p>如果官方词里有：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">召唤兽
+宠物
+</code></pre></td></tr></table>
+</div>
+</div><p>那生成同义词：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">宝宝 召唤兽 宠物
+</code></pre></td></tr></table>
+</div>
+</div><p>再比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">七杀怎么打
+</code></pre></td></tr></table>
+</div>
+</div><p>和官方词：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">七杀阵
+</code></pre></td></tr></table>
+</div>
+</div><p>匹配，就生成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">七杀 七杀阵
+</code></pre></td></tr></table>
+</div>
+</div><p>这一步可以用模型，下一节单独讲用模型咋做。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">
+**4. 自动关键词抽取怎么处理**
+
+这类质量最低，适合补充候选词。
+
+来源：
+
+```text
+攻略正文
+公告正文
+FAQ
+论坛精选帖
+客服问答
+</code></pre></td></tr></table>
+</div>
+</div><p>方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">TF-IDF
+TextRank
+n-gram 高频短语
+NER 实体识别
+LLM 抽取
+</code></pre></td></tr></table>
+</div>
+</div><p>但抽完不能直接入词典，要进审核表。</p>
+<p>比如模型/算法抽到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">幻魔宫
+弑神进阶
+药师治疗
+血盟联赛
+强大的群体攻击
+必须掌握的技巧
+</code></pre></td></tr></table>
+</div>
+</div><p>其中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">幻魔宫
+弑神进阶
+药师治疗
+血盟联赛
+</code></pre></td></tr></table>
+</div>
+</div><p>是好词。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">强大的群体攻击
+必须掌握的技巧
+</code></pre></td></tr></table>
+</div>
+</div><p>偏描述/标题，不一定适合入词典。</p>
+<p><strong>5. 啥时候用大模型处理呢</strong></p>
+<p>大模型可以用，但是用的方法就很讲究了，通过经验，我们认为建议放在两个位置。</p>
+<p>第一，<strong>实体抽取</strong>：</p>
+<p>让模型从文本里抽如下的东西：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;skills&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;烈火剑法&#34;</span><span class="p">,</span> <span class="s2">&#34;弑神技能&#34;</span><span class="p">],</span>
+  <span class="nt">&#34;items&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;赤焰剑&#34;</span><span class="p">,</span> <span class="s2">&#34;生命药水&#34;</span><span class="p">],</span>
+  <span class="nt">&#34;maps&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;幻魔宫&#34;</span><span class="p">,</span> <span class="s2">&#34;万劫窟&#34;</span><span class="p">],</span>
+  <span class="nt">&#34;quests&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;七杀阵&#34;</span><span class="p">,</span> <span class="s2">&#34;百环任务&#34;</span><span class="p">],</span>
+  <span class="nt">&#34;systems&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;坐骑捕获培养&#34;</span><span class="p">,</span> <span class="s2">&#34;装备强化&#34;</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>适合处理非结构化攻略、公告、FAQ。</p>
+<p>第二，<strong>同义词归并</strong>：</p>
+<p>让模型判断：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">宝宝 -&gt; 召唤兽
+本 -&gt; 副本
+七杀 -&gt; 七杀阵
+红药 -&gt; 生命药水
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<p>但是！！！经验告诉我们，不要让模型直接写最终词典，应该让它生成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">候选词 + 置信度 + 来源证据
+</code></pre></td></tr></table>
+</div>
+</div><p>然后人工审核或规则校验，总之不要相信大模型，直接入字典。</p>
+<p><strong>最终输出一般分 4 个文件</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">domain_userdict.txt
+</code></pre></td></tr></table>
+</div>
+</div><p>给 tokenizer 用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">七杀阵 9000 n
+坐骑捕获培养 9000 n
+幻魔宫 8500 ns
+赤月恶魔 8500 nr
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">domain_synonyms.txt
+</code></pre></td></tr></table>
+</div>
+</div><p>给 query 扩展用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">宝宝 召唤兽 宠物
+七杀 七杀阵
+本 副本
+红药 生命药水
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">domain_stopwords.txt
+</code></pre></td></tr></table>
+</div>
+</div><p>过滤垃圾词：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">点击
+查看
+更多
+官网
+介绍
+说明
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">domain_review.csv
+</code></pre></td></tr></table>
+</div>
+</div><p>人工审核：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">term,source,type,score,status,evidence
+七杀阵,quest_config,activity,0.99,approved,quest_config.csv:1001
+宝宝,search_log,synonym,0.86,pending,top query 123次
+</code></pre></td></tr></table>
+</div>
+</div><p>借用我们组当时关于分词器字典的会议总结：</p>
+<ul>
+<li>结构化数据规则抽取为主</li>
+<li>资料站结构抽取辅助</li>
+<li>搜索日志补玩家叫法</li>
+<li>模型用于非结构化文本抽候选和同义词归并</li>
+<li>最后用人工审核和检索指标闭环</li>
+<li>模型是增强工具，不是唯一核心。</li>
+</ul>
+<h3 id="32-怎么用-llm">3.2 怎么用 LLM</h3>
+<p>始终牢记“不要让模型直接生成最终词典”，而是用模型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">抽候选实体：
+ -&gt; 输出结构化 JSON
+ -&gt; 程序校验/去重/打分
+ -&gt; 人工审核
+ -&gt; 再生成 userdict.txt / synonyms.txt
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>为什么不能完全相信模型</strong></p>
+<p>模型会犯这些错：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">把句子当词
+抽出营销词
+编造别名
+类型判断错误
+遗漏低频但重要实体
+</code></pre></td></tr></table>
+</div>
+</div><p>所以必须保留：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">evidence 原文证据
+confidence 置信度
+review.csv 人工审核
+规则校验
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="约束-llm-的数据结构">约束 LLM 的数据结构</h4>
+<p>对我们的游戏领域来说，模型适合抽这些结构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;terms&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;term&#34;</span><span class="p">:</span> <span class="s2">&#34;七杀阵&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;activity&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;aliases&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;七杀&#34;</span><span class="p">],</span>
+      <span class="nt">&#34;confidence&#34;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+      <span class="nt">&#34;evidence&#34;</span><span class="p">:</span> <span class="s2">&#34;20级七杀阵是组队玩法&#34;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;term&#34;</span><span class="p">:</span> <span class="s2">&#34;坐骑捕获培养&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;system&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;aliases&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;坐骑培养&#34;</span><span class="p">,</span> <span class="s2">&#34;抓坐骑&#34;</span><span class="p">],</span>
+      <span class="nt">&#34;confidence&#34;</span><span class="p">:</span> <span class="mf">0.91</span><span class="p">,</span>
+      <span class="nt">&#34;evidence&#34;</span><span class="p">:</span> <span class="s2">&#34;坐骑捕获培养&#34;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们为此次设计的字段：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">term：标准词
+type：实体类型
+aliases：玩家可能叫法
+confidence：模型置信度
+evidence：来自原文的证据
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="llm-实现">LLM 实现</h4>
+<p>针对2.1 节的大模型实现流程</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">HTML 页面
+ -&gt; 提取正文 text
+ -&gt; 按 2000-4000 字切块
+ -&gt; 调模型抽实体 JSON
+ -&gt; 校验 JSON
+ -&gt; 合并相同 term
+ -&gt; 根据 type/source/confidence 打分
+ -&gt; 生成 review.csv
+ -&gt; 人工确认后生成词典
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>Prompt 示例</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">你是游戏资料词典构建助手。
+请从下面的游戏资料文本中抽取适合 RAG 检索分词词典的领域词。
+
+只抽这些类型：
+- profession: 职业/门派/角色职业
+- skill: 技能
+- item: 道具/装备/材料
+- npc: NPC/BOSS/怪物
+- map: 地图/场景
+- quest: 任务
+- activity: 副本/活动/玩法
+- system: 游戏系统
+- attribute: 数值属性
+
+不要抽：
+- 普通描述词
+- 营销词
+- 导航词
+- “更多/查看/进入/介绍/说明”
+- 太长的句子
+
+返回 JSON：
+{
+  &#34;terms&#34;: [
+    {
+      &#34;term&#34;: &#34;标准词&#34;,
+      &#34;type&#34;: &#34;activity&#34;,
+      &#34;aliases&#34;: [&#34;别名1&#34;, &#34;别名2&#34;],
+      &#34;confidence&#34;: 0.0-1.0,
+      &#34;evidence&#34;: &#34;原文证据&#34;
+    }
+  ]
+}
+
+文本：
+...
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>代码示例</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
+
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="n">xxx</span><span class="p">,</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="n">xxx</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">extract_terms_by_llm</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_prompt</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&#34; xxx&#34;</span><span class="p">,</span>
+        <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;system&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;你只输出合法 JSON，不要输出解释。&#34;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">},</span>
+        <span class="p">],</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">content</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;terms&#34;</span><span class="p">,</span> <span class="p">[])</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>把之前的设计的 json 字段类型映射到词性</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">POS_BY_TYPE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;profession&#34;</span><span class="p">:</span> <span class="s2">&#34;nr&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;skill&#34;</span><span class="p">:</span> <span class="s2">&#34;n&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;item&#34;</span><span class="p">:</span> <span class="s2">&#34;n&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;npc&#34;</span><span class="p">:</span> <span class="s2">&#34;nr&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;map&#34;</span><span class="p">:</span> <span class="s2">&#34;ns&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;quest&#34;</span><span class="p">:</span> <span class="s2">&#34;n&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;activity&#34;</span><span class="p">:</span> <span class="s2">&#34;n&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;system&#34;</span><span class="p">:</span> <span class="s2">&#34;n&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;attribute&#34;</span><span class="p">:</span> <span class="s2">&#34;n&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>置信度转频率</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">confidence_to_freq</span><span class="p">(</span><span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="mi">7000</span>
+
+    <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&#34;official_config&#34;</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">+=</span> <span class="mi">2000</span>
+    <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s2">&#34;official_site&#34;</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">+=</span> <span class="mi">1000</span>
+
+    <span class="k">if</span> <span class="n">confidence</span> <span class="o">&gt;=</span> <span class="mf">0.9</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">9000</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">confidence</span> <span class="o">&gt;=</span> <span class="mf">0.75</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">base</span>
+    <span class="k">if</span> <span class="n">confidence</span> <span class="o">&gt;=</span> <span class="mf">0.6</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">5000</span>
+
+    <span class="k">return</span> <span class="mi">3000</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>合并逻辑</strong></p>
+<p>同一个词可能多个页面都抽到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">merged</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;七杀阵&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;activity&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;confidence&#34;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+        <span class="s2">&#34;count&#34;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="s2">&#34;sources&#34;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+        <span class="s2">&#34;aliases&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;七杀&#34;</span><span class="p">},</span>
+        <span class="s2">&#34;evidence&#34;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>最终打分可以这样：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">final_score =
+  confidence * 50
+  + 页面出现次数 * 5
+  + 来源权重
+  + 是否有标题/表格证据
+</code></pre></td></tr></table>
+</div>
+</div><p>** 最终输出 userdict.txt**</p>
+<p><strong>最终融合LLM 的推荐架构</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">结构化配置表
+ -&gt; 规则抽取，高置信，直接入候选
+
+官网资料页
+ -&gt; HTML 结构抽取 + LLM 抽取，互相补充
+
+玩家搜索日志
+ -&gt; 统计 query + embedding/LLM 归并别名
+
+模型输出
+ -&gt; review.csv
+ -&gt; 人工审核 approved/rejected
+ -&gt; 生成 userdict/synonyms/stopwords
+ -&gt; RAG 召回评估
+</code></pre></td></tr></table>
+</div>
+</div><p>模型绝对不能替代规则，而是可以配合补充下面这两块：</p>
+<ol>
+<li>从非结构化正文中识别实体</li>
+<li>把玩家叫法和官方词归并成同义词</li>
+</ol>
+<p>对于官方配置表、HTML 标题、表格字段，规则更稳；对于攻略正文、FAQ、玩家问法，模型更有价值。</p>
+<h3 id="33-自定义分词器架构">3.3 自定义分词器架构</h3>
+<p>🌿 ，不知不觉写了这么多，有点累了……
+看来代码架构实现，得下一篇总结了，今天先到这吧，算是抛砖引玉了，要是觉得有启发，给俺文章留言讨论呀，哈哈哈……</p>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">沐桢</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2026-06-19
+        <a href="/commit/b21b9883a0b2d2b7f5440e772bf96b98493a4f6b" title="feat: 增加文章">(b21b988)</a>
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/rag/">RAG</a>
+          <a href="/tags/%E5%88%86%E8%AF%8D%E5%99%A8/">分词器</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">RAG设计之Chunk处理</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
+            <span class="next-text nav-default">RAG系统设计</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2024-03-08 23:51:40 \u002b0800 CST',
+        title: 'RAG设计之分词器',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'hugo-blog-comments',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>沐桢</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+  
+</body>
+</html>

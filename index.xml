@@ -35,6 +35,15 @@
     </item>
     
     <item>
+      <title>MCP是什么</title>
+      <link>http://wushao666.github.io/post/mcp%E6%98%AF%E4%BB%80%E4%B9%88/</link>
+      <pubDate>Sun, 30 Mar 2025 23:19:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/mcp%E6%98%AF%E4%BB%80%E4%B9%88/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>BFF层服务的前端工程化</title>
       <link>http://wushao666.github.io/post/bff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/</link>
       <pubDate>Mon, 26 Aug 2024 10:35:43 +0800</pubDate>
@@ -49,7 +58,25 @@
       <pubDate>Sun, 16 Jun 2024 23:30:38 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/</guid>
-      <description>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。</description>
+      <description>号外：发现hono.js是个神器呀，配合上 cloudflare，再加上 AI 时代的需要，又能跨平台、性能还猛…… 这个系列是基于在鹅厂的工程实践，</description>
+    </item>
+    
+    <item>
+      <title>RAG设计之Chunk处理</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</link>
+      <pubDate>Thu, 28 Mar 2024 22:56:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RAG设计之分词器</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</link>
+      <pubDate>Fri, 08 Mar 2024 23:51:40 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</guid>
+      <description>&lt;p&gt;本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -59,15 +86,6 @@
       
       <guid>http://wushao666.github.io/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</guid>
       <description>flowchart LR Client[&amp;#34;前端/调用方&amp;#34;] --&amp;gt; API[&amp;#34;FastAPI app_main:app&amp;#34;] API --&amp;gt; UserRouter[&amp;#34;router/user_rt.py\n登录、注</description>
-    </item>
-    
-    <item>
-      <title>RAG设计之文档解析模块</title>
-      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90%E6%A8%A1%E5%9D%97/</link>
-      <pubDate>Tue, 21 Feb 2023 23:59:40 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90%E6%A8%A1%E5%9D%97/</guid>
-      <description>这块是真复杂啊</description>
     </item>
     
     <item>

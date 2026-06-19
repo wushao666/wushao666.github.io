@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="沐桢" /><meta name="description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。" />
+<meta name="author" content="沐桢" /><meta name="description" content="号外：发现hono.js是个神器呀，配合上 cloudflare，再加上 AI 时代的需要，又能跨平台、性能还猛…… 这个系列是基于在鹅厂的工程实践，" />
 
 
 
@@ -40,19 +40,19 @@
 
 
 <meta property="og:title" content="BFF的服务端设计" />
-<meta property="og:description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。" />
+<meta property="og:description" content="号外：发现hono.js是个神器呀，配合上 cloudflare，再加上 AI 时代的需要，又能跨平台、性能还猛…… 这个系列是基于在鹅厂的工程实践，" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2024-06-16T23:30:38+08:00" />
-<meta property="article:modified_time" content="2026-04-14T13:53:49+08:00" />
+<meta property="article:modified_time" content="2026-06-19T19:50:41+08:00" />
 
 <meta itemprop="name" content="BFF的服务端设计">
-<meta itemprop="description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。"><meta itemprop="datePublished" content="2024-06-16T23:30:38+08:00" />
-<meta itemprop="dateModified" content="2026-04-14T13:53:49+08:00" />
-<meta itemprop="wordCount" content="740">
+<meta itemprop="description" content="号外：发现hono.js是个神器呀，配合上 cloudflare，再加上 AI 时代的需要，又能跨平台、性能还猛…… 这个系列是基于在鹅厂的工程实践，"><meta itemprop="datePublished" content="2024-06-16T23:30:38+08:00" />
+<meta itemprop="dateModified" content="2026-06-19T19:50:41+08:00" />
+<meta itemprop="wordCount" content="794">
 <meta itemprop="keywords" content="BFF层," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="BFF的服务端设计"/>
-<meta name="twitter:description" content="这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。 本文是BFF层设计的开端：使用koa封装服务端逻辑。"/>
+<meta name="twitter:description" content="号外：发现hono.js是个神器呀，配合上 cloudflare，再加上 AI 时代的需要，又能跨平台、性能还猛…… 这个系列是基于在鹅厂的工程实践，"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -136,7 +136,7 @@
         <div class="post-category">
             <a href="/categories/bff/"> BFF </a>
             </div>
-          <span class="more-meta"> 约 740 字 </span>
+          <span class="more-meta"> 约 794 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         
       </div>
@@ -157,7 +157,8 @@
   </div>
 </div>
     <div class="post-content">
-      <p>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。</p>
+      <p>号外：发现hono.js是个神器呀，配合上 cloudflare，再加上 AI 时代的需要，又能跨平台、性能还猛……</p>
+<p>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。，也能记录那段还算快乐的时光。</p>
 <p>本文是BFF层设计的开端：使用koa封装服务端逻辑。
 本系列中的BFF层设计是为了解决多个子应用访问的问题：</p>
 <ol>
@@ -237,8 +238,8 @@
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-        2026-04-14
-        <a href="/commit/fea8182689018450b83164e0c099f5b2cce17d70" title="feat: 更新">(fea8182)</a>
+        2026-06-19
+        <a href="/commit/b21b9883a0b2d2b7f5440e772bf96b98493a4f6b" title="feat: 增加文章">(b21b988)</a>
     </span>
   </p>
   
@@ -257,8 +258,8 @@
             <span class="prev-text nav-default">BFF层服务的前端工程化</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        <a class="next" href="/post/rag-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
-            <span class="next-text nav-default">RAG系统设计</span>
+        <a class="next" href="/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/">
+            <span class="next-text nav-default">RAG设计之Chunk处理</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
