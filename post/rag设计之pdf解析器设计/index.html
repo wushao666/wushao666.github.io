@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>RAG设计之PDF解析器优化 - 林川在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="沐桢" /><meta name="description" content="本文主题是 pdf 解析器，是离线解析文档的入口，也是比较难的一部分，因为 PDF 里面的内容比较复杂，需要考虑很多细节。 例如：表格数据（尤以多个表格排布最难）、图片、页脚引用等等。本文使用到的资料均已脱敏，不涉及到任何公司隐私，仅做个人复盘。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E8%A7%A3%E6%9E%90%E5%99%A8%E8%AE%BE%E8%AE%A1/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="RAG设计之PDF解析器优化" />
+<meta property="og:description" content="本文主题是 pdf 解析器，是离线解析文档的入口，也是比较难的一部分，因为 PDF 里面的内容比较复杂，需要考虑很多细节。
+例如：表格数据（尤以多个表格排布最难）、图片、页脚引用等等。本文使用到的资料均已脱敏，不涉及到任何公司隐私，仅做个人复盘。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E8%A7%A3%E6%9E%90%E5%99%A8%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2024-05-10T23:59:00+08:00" />
+<meta property="article:modified_time" content="2024-05-10T23:59:00+08:00" />
+
+<meta itemprop="name" content="RAG设计之PDF解析器优化">
+<meta itemprop="description" content="本文主题是 pdf 解析器，是离线解析文档的入口，也是比较难的一部分，因为 PDF 里面的内容比较复杂，需要考虑很多细节。
+例如：表格数据（尤以多个表格排布最难）、图片、页脚引用等等。本文使用到的资料均已脱敏，不涉及到任何公司隐私，仅做个人复盘。"><meta itemprop="datePublished" content="2024-05-10T23:59:00+08:00" />
+<meta itemprop="dateModified" content="2024-05-10T23:59:00+08:00" />
+<meta itemprop="wordCount" content="8643">
+<meta itemprop="keywords" content="RAG,PDF-parser," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RAG设计之PDF解析器优化"/>
+<meta name="twitter:description" content="本文主题是 pdf 解析器，是离线解析文档的入口，也是比较难的一部分，因为 PDF 里面的内容比较复杂，需要考虑很多细节。
+例如：表格数据（尤以多个表格排布最难）、图片、页脚引用等等。本文使用到的资料均已脱敏，不涉及到任何公司隐私，仅做个人复盘。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">林川在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">林川在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">RAG设计之PDF解析器优化</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2024-05-10 </span>
+        <div class="post-category">
+            <a href="/categories/ai-llm/"> AI-LLM </a>
+            </div>
+          <span class="more-meta"> 约 8643 字 </span>
+          <span class="more-meta"> 预计阅读 18 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#1-缘起">1. 缘起</a></li>
+        <li><a href="#2-工程化改进">2. 工程化改进</a>
+          <ul>
+            <li><a href="#21-繁体乱码">2.1 繁体乱码</a>
+              <ul>
+                <li><a href="#211-架构优化">2.1.1 架构优化</a></li>
+              </ul>
+            </li>
+            <li><a href="#22-页尾内容丢失-页脚处理">2.2 页尾内容丢失-页脚处理</a>
+              <ul>
+                <li><a href="#221-架构优化">2.2.1 架构优化</a></li>
+              </ul>
+            </li>
+            <li><a href="#23-拆分正文和非正文">2.3 拆分正文和非正文</a></li>
+            <li><a href="#24-rag检索增强-cch">2.4 RAG检索增强-CCH</a></li>
+            <li><a href="#25-倍率转换">2.5 倍率转换</a></li>
+            <li><a href="#26-plain-parser">2.6 plain Parser</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>本文主题是 pdf 解析器，是离线解析文档的入口，也是比较难的一部分，因为 PDF 里面的内容比较复杂，需要考虑很多细节。
+例如：表格数据（尤以多个表格排布最难）、图片、页脚引用等等。本文使用到的资料均已脱敏，不涉及到任何公司隐私，仅做个人复盘。</p>
+<h2 id="1-缘起">1. 缘起</h2>
+<p>从零手写一个PDF解析器，确实比较难，幸好中台组的small他们搞到了一个开源的解析器，我在此基础上做了工程化的改造，使其符合我们的游戏内 RAG 应用需要。</p>
+<p>这个解析器的核心流程是：</p>
+<ol>
+<li>PDF 页面渲染</li>
+<li>OCR</li>
+<li>Layout 识别</li>
+<li>Table Structure 识别</li>
+<li>文本块合并</li>
+<li>给文本追加坐标 tag，记录页码，上右下左的坐标值。例如：
+<img src="/RAG/parser/3.png" alt=""></li>
+</ol>
+<p>它本质上这是一个依赖视觉模型 OCR的解析器，通过后训练过的模型进行处理 PDF 数据，来保证准确：</p>
+<pre class="mermaid">
+  
+flowchart LR
+  A[&#34;nlp/vision/ocr.py&#34;] --&gt; B[&#34;rag/res/deepdoc/det.onnx&#34;]
+  A --&gt; C[&#34;rag/res/deepdoc/rec.onnx&#34;]
+  A --&gt; D[&#34;rag/res/deepdoc/ocr.res&#34;]
+  E[&#34;layout_recognizer.py&#34;] --&gt; F[&#34;layout.onnx / layout.paper.onnx / layout.manual.onnx / layout.laws.onnx&#34;]
+  G[&#34;table_structure_recognizer.py&#34;] --&gt; H[&#34;tsr.onnx&#34;]
+  I[&#34;pdf_parser.py&#34;] --&gt; J[&#34;updown_concat_xgb.model&#34;]
+
+</pre>
+
+<p>中台组的算法小伙伴负责微调视觉模型，各个文件作用：</p>
+<ul>
+<li><code>det.onnx</code>：OCR 文本检测。</li>
+<li><code>rec.onnx</code>：OCR 文本识别。</li>
+<li><code>layout*.onnx</code>：不同领域 PDF 的版面识别模型。</li>
+<li><code>tsr.onnx</code>：表格结构识别模型。</li>
+<li><code>updown_concat_xgb.model</code>：判断上下文本块是否应拼接的 XGBoost 模型。</li>
+<li><code>ocr.res</code>：OCR 字典或相关识别资源。
+<img src="/RAG/parser/2.png" alt=""></li>
+</ul>
+<p>用到的核心第三方库是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">import xgboost as xgb
+import pdfplumber
+from PIL import Image
+import numpy as np
+from pypdf import PdfReader as pdf2_read
+</code></pre></td></tr></table>
+</div>
+</div><p>识图说话。</p>
+<h2 id="2-工程化改进">2. 工程化改进</h2>
+<p>按理说这个开源的解析器已经比较完善了，但是当运营老大用台服的 PDF 测试时，发现解析出来的数据有问题，例如：</p>
+<ol>
+<li>繁体乱码
+<img src="/RAG/parser/1.png" alt="">，这对中文繁体好像不兼容啊，直接乱码了</li>
+<li>页尾内容丢失
+<img src="/RAG/parser/12.png" alt="">
+<img src="/RAG/parser/13.png" alt=""></li>
+<li>引用识别错误
+<img src="/RAG/parser/4.jpg" alt="">
+<img src="/RAG/parser/5.jpg" alt="">
+这些其实不是引用，而是正文内容，正确的引用应该是这种：
+<img src="/RAG/parser/6.jpg" alt="">
+<img src="/RAG/parser/7.jpg" alt=""></li>
+<li>目前的复杂解析速度慢，有些简单的 pdf 不用 OCR 也能解析出来，没必要走 OCR 等等流程</li>
+<li>等等……</li>
+</ol>
+<p>怎么解决问题呢？其他识别精度算法上的问题可以交给中台，这几个我可以从工程化角度上，解决。</p>
+<h3 id="21-繁体乱码">2.1 繁体乱码</h3>
+<p>通过分析数据，我发现虽然乱码了，但是期望文本块的坐标值是正确的
+<img src="/RAG/parser/8.png" alt="">
+符合<code>@@page\tleft\tright\ttop\tbottom</code>的格式，表示在第几页，块的左右坐标，顶部坐标，底部坐标，这样矩形框就可以绘制了。
+稍微补一下前置背景（这是伏笔 1👨🏻‍💻，下一章会重点介绍 parser 的整体架构设计）：</p>
+<p>在此只是简单介绍一下原架构中 ：</p>
+<ol>
+<li>pdfplumer把每页 PDF 解析生图片，同时再处理文本，生成上面带坐标的文本字符串</li>
+<li>然后通过 OCR 识别文本框，也打上标签</li>
+<li>用坐标匹配的方法，把对应的文本框和 OCR 识别的文本匹配起来，最终生成带坐标的文本块。</li>
+</ol>
+<p><img src="/RAG/parser/9.png" alt="">
+<img src="/RAG/parser/10.png" alt=""></p>
+<ol>
+<li><strong>images</strong>() 先用 pdfplumber 取字符：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="bp">self</span><span class="o">.</span><span class="n">page_chars</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span> <span class="n">page</span><span class="o">.</span><span class="n">dedupe_chars</span><span class="p">()</span><span class="o">.</span><span class="n">chars</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>__ocr() 里把这些字符填回 OCR 检测框：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">bxs</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="s2">&#34;text&#34;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">c</span><span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li>原架构的设计，是当 text 为空时，采用 OCR 进一步兜底再去获取 text 的</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">if</span> <span class="ow">not</span> <span class="n">b</span><span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">]:</span>
+    <span class="n">b</span><span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ocr</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然而本质问题是: pdfplumber底层依赖 pdfminer.six，导致他对系统字体和PDF内嵌信息要求很高。
+<img src="/RAG/parser/11.png" alt=""></p>
+<p>所以PDF 里 pdfplumber 能读到 chars，但读出来是乱码，所以 b[&ldquo;text&rdquo;] 不为空，代码就不会走 OCR 兜底。结果就是：检测框和坐标是对的，文本是错的。</p>
+<p>那么我直接换掉pdfplumber就能解决吗？
+答案不是仅仅换掉就能解决的，pdfplumber需要做 pdf 的图片转换。
+由此又引发了两个新的问题：</p>
+<ol>
+<li>为什么需要两套 PDF 读取？</li>
+</ol>
+<p>因为 pypdf 和 pdfplumber 都能“读 PDF”，但它们读的层次不一样。</p>
+<ul>
+<li>pypdf 更像“读 PDF 里的文本流”。</li>
+</ul>
+<p>一个实用的工程策略是：<strong>用 <code>pypdf</code> 做基础的文本提取，用 <code>pdfplumber</code> 做精细的布局和表格解析</strong>。两者结合使用，可以取长补短。
+它擅长把 PDF 内部文本抽出来，而且它的底层继承了很多编码格式，较少的依赖系统字体库，pypdf.extract_text() 能读出正常中文。但它基本不给我们稳定的版面坐标、文本框、表格区域、图片区域、阅读顺序结构。</p>
+<ul>
+<li>pdfplumber 更像“读 PDF 的页面版面对象”。
+它能拿到字符级坐标、矩形、线条、表格线索、页面位置，所以适合做坐标引用。但 PDF 的中文字体经常使用自定义编码或缺失 ToUnicode 映射，pdfplumber 可能拿到字符位置，却把字符本身解码错，于是出现 PRBww Hmjn 这种乱码。</li>
+</ul>
+<p>两者的测试对比：
+<img src="/RAG/parser/15.png" alt="">
+<img src="/RAG/parser/16.png" alt=""></p>
+<ol start="2">
+<li>为什么不能直接用现成pdf库读完，还要这么复杂的架构？
+因为 RAG 入库不只是要“文本”，还要这些东西：</li>
+</ol>
+<ul>
+<li>可检索正文</li>
+<li>页码</li>
+<li>坐标</li>
+<li>阅读顺序</li>
+<li>表格结构</li>
+<li>maybe 扫描版 PDF 的 OCR</li>
+<li>maybe 后续能把答案引用定位回原 PDF 页面区域</li>
+</ul>
+<p>如果只用 pypdf，文本可能是对的，但坐标弱，答案引用没法可靠高亮。
+如果只用 pdfplumber，坐标强，但遇到这类中文编码 PDF，文本可能是乱码。
+如果只用 OCR，坐标和扫描件都能处理，但文本精度、速度、成本都不如直接读取内嵌文本。</p>
+<p>所以 pdf_parser.py 的意义是做“生产 RAG PDF 解析器”，不是简单 read_pdf()：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">pypdf        -&gt; 提供可信内嵌文本
+pdfplumber   -&gt; 提供页面、字符、坐标、渲染能力
+DeepDOC OCR  -&gt; 处理扫描件/乱码文本兜底
+Layout       -&gt; 判断正文、标题、表格、页眉页脚
+TSR          -&gt; 表格结构识别
+parser       -&gt; 合并这些结果，输出带坐标的 chunk 文本
+</code></pre></td></tr></table>
+</div>
+</div><p>为此，我设计了新的方案处理：</p>
+<h4 id="211-架构优化">2.1.1 架构优化</h4>
+<ol>
+<li>加页级文本质量判断：</li>
+</ol>
+<ul>
+<li>提取每页 pdfplumber 文本和 pypdf 文本。</li>
+<li>判断 pdfplumber 是否乱码：中文比例明显低、ASCII 噪声高、而 pypdf 中文比例明显高时，认为 pdfplumber chars 不可信。</li>
+<li>对不可信页不再把 pdfplumber chars 传入 __ocr()，强制 解析器重新 OCR 生成检测框和坐标。</li>
+</ul>
+<ol start="2">
+<li>实现“双路合并”：</li>
+</ol>
+<ul>
+<li>OCR 负责生成文本框、阅读顺序、页码和坐标。</li>
+<li>pypdf 负责提供可信正文行。</li>
+<li>当 pypdf 行数和 OCR 框数量大致匹配时，按阅读顺序用 pypdf 行替换 OCR 框文本，保留 OCR 框坐标。</li>
+<li>当行数不匹配时，保留 OCR 框文本，并追加一个带页级坐标 tag 的 pypdf 搜索文本块，保证可检索文本和坐标字段同时存在。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 页面质量判断</span>
+<span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_should_trust_pdfplumber_text</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pdfplumber_text</span><span class="p">,</span> <span class="n">pypdf_text</span><span class="p">):</span>
+        <span class="o">...</span>
+        <span class="c1"># 抽取每页文本</span>
+        <span class="n">plumber_stats</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_text_stats</span><span class="p">(</span><span class="n">pdfplumber_text</span><span class="p">)</span>
+        <span class="n">pypdf_stats</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_text_stats</span><span class="p">(</span><span class="n">pypdf_text</span><span class="p">)</span>
+        <span class="o">...</span> 
+        <span class="c1"># 阈值判断</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">plumber_stats</span><span class="p">[</span><span class="s2">&#34;cjk_ratio&#34;</span><span class="p">]</span>
+            <span class="o">&lt;</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">pypdf_stats</span><span class="p">[</span><span class="s2">&#34;cjk_ratio&#34;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.35</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">plumber_stats</span><span class="p">[</span><span class="s2">&#34;ascii_noise_ratio&#34;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.35</span>
+        <span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="22-页尾内容丢失-页脚处理">2.2 页尾内容丢失-页脚处理</h3>
+<p>这个问题本质是因为： 原架构默认是会剔除页眉页脚，认为这些数据是噪声，会污染 RAG 数据，
+所以当pypdf 行数与 OCR 框数不一致，按顺序替换时末行被错绑到页脚或被过滤。
+同时经过分析问题 2、3 的过程中发现，是页脚处理的连锁反应导致的，也就是说：</p>
+<p><img src="/RAG/parser/12.png" alt="">
+<img src="/RAG/parser/13.png" alt=""></p>
+<p><img src="/RAG/parser/4.jpg" alt="">
+<img src="/RAG/parser/5.jpg" alt=""></p>
+<p>处理之后正确的应该是：
+<img src="/RAG/parser/6.jpg" alt="">
+<img src="/RAG/parser/7.jpg" alt="">
+这些问题具有共性：</p>
+<ul>
+<li>页脚丢失：补充文本如果在 layout 前加入，会被 layout recognizer 清理掉。</li>
+<li>跨页页高计算错误：在 page_cum_height 尚未累加时用相邻页高差，导致第一页以后正文/页脚拆分失效。</li>
+<li>右上角引用号问题：无法清楚知道什么是脚注、什么是正文。</li>
+</ul>
+<h4 id="221-架构优化">2.2.1 架构优化</h4>
+<p>这部分涉及正文、非正内容区分，我按照分层理论进一步抽象一个 scholarly 层做数据层，原 parser 透传给这一层，处理完后，吐回去。
+<img src="/RAG/parser/14.png" alt="">
+也就是说目前架构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">RAGPdfParser
+  只负责：PDF -&gt; 文本、box、页码、坐标、正文/页脚原始区域信息
+
+  -&gt;  PdfScholarlyStructureExtractor
+    负责：引用号识别、脚注识别、引用号和脚注来源关联
+
+  -&gt;  tokenize_chunks()
+    负责：把结构化引用信息挂到 chunk/ES 文档字段
+</code></pre></td></tr></table>
+</div>
+</div><p>实现逻辑上：</p>
+<p>在现有 PDF parser 的“可检索文本 + 坐标”基础上，新增一层结构化引用关系：</p>
+<ul>
+<li>
+<p>正文引用号保留为 <code>citation_refs_nst</code></p>
+</li>
+<li>
+<p>页脚脚注来源保留为 <code>footnotes_obj</code>。</p>
+</li>
+<li>
+<p>字段示例：
+当前结构是两层：</p>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="err">footnotes_obj</span> <span class="err">=</span> <span class="p">{</span>
+    <span class="nt">&#34;页码&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;脚注编号&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;ref_id&#34;</span><span class="p">:</span> <span class="s2">&#34;脚注编号&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;text&#34;</span><span class="p">:</span> <span class="s2">&#34;脚注来源文本&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;page_num_int&#34;</span><span class="p">:</span> <span class="err">页码</span><span class="p">,</span>
+            <span class="nt">&#34;position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="err">页码</span><span class="p">,</span> <span class="err">left</span><span class="p">,</span> <span class="err">right</span><span class="p">,</span> <span class="err">top</span><span class="p">,</span> <span class="err">bottom</span><span class="p">],</span>
+            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;pypdf_footer&#34;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// 角标和脚注关联则在 citation_refs_nst 里，是列表结构：
+</span><span class="c1"></span><span class="err">citation_refs_nst</span> <span class="err">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="nt">&#34;ref_id&#34;</span><span class="p">:</span> <span class="s2">&#34;99&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;page_num_int&#34;</span><span class="p">:</span> <span class="mi">29</span><span class="p">,</span>
+        <span class="nt">&#34;marker_text&#34;</span><span class="p">:</span> <span class="s2">&#34;99&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;marker_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">29</span><span class="p">,</span> <span class="err">left</span><span class="p">,</span> <span class="err">right</span><span class="p">,</span> <span class="err">top</span><span class="p">,</span> <span class="err">bottom</span><span class="p">],</span>
+        <span class="nt">&#34;position_granularity&#34;</span><span class="p">:</span> <span class="s2">&#34;superscript&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;footnote_key&#34;</span><span class="p">:</span> <span class="s2">&#34;29:99&#34;</span><span class="p">,</span> <span class="c1">// 页码：引用号
+</span><span class="c1"></span>        <span class="nt">&#34;footnote_page_num_int&#34;</span><span class="p">:</span> <span class="mi">29</span><span class="p">,</span>
+        <span class="nt">&#34;footnote_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">29</span><span class="p">,</span> <span class="err">left</span><span class="p">,</span> <span class="err">right</span><span class="p">,</span> <span class="err">top</span><span class="p">,</span> <span class="err">bottom</span><span class="p">],</span>
+        <span class="nt">&#34;confidence_flt&#34;</span><span class="p">:</span> <span class="mf">0.9</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>所以问题来了：</p>
+<ol>
+<li>怎么判断是不是小角标？
+原来的设想是用正则从正文里面找，试了很多规则和方式，测试都不理想，最后结合几何判断，终于搞定。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">_detect_superscript_markers</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">chars</span><span class="p">,</span> <span class="n">page_height</span><span class="p">):</span>
+    <span class="c1"># 脱敏后的</span>
+    <span class="n">body_bottom</span> <span class="o">=</span> <span class="n">page_height</span> <span class="o">*</span> <span class="mf">0.82</span> <span class="c1"># 基于经验值判断正文区域</span>
+
+    <span class="n">body_chars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">char</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">chars</span>
+        <span class="k">if</span> <span class="n">char</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;text&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">and</span> <span class="n">char</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;top&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">body_bottom</span>
+    <span class="p">]</span>
+
+    <span class="n">heights</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_char_height</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">body_chars</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_char_height</span><span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">8</span>
+    <span class="p">]</span>
+
+    <span class="n">normal_height</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">heights</span><span class="p">))</span>
+
+    <span class="n">full_size_chars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">char</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">body_chars</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_char_height</span><span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">normal_height</span> <span class="o">*</span> <span class="mf">0.9</span>
+        <span class="ow">and</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&#34;\d&#34;</span><span class="p">,</span> <span class="n">char</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;text&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">))</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_digit_groups</span><span class="p">(</span><span class="n">body_chars</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">char</span><span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">]</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">group</span><span class="p">)</span>
+        <span class="n">marker_height</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_char_height</span><span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">group</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">marker_height</span> <span class="o">&gt;=</span> <span class="n">normal_height</span> <span class="o">*</span> <span class="mf">0.82</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="o">...</span>
+        <span class="n">neighbor_center</span> <span class="o">=</span> <span class="p">(</span><span class="n">neighbor</span><span class="p">[</span><span class="s2">&#34;top&#34;</span><span class="p">]</span> <span class="o">+</span> <span class="n">neighbor</span><span class="p">[</span><span class="s2">&#34;bottom&#34;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">raised</span> <span class="o">=</span> <span class="n">neighbor_center</span> <span class="o">-</span> <span class="n">center</span>
+
+        <span class="k">if</span> <span class="n">raised</span> <span class="o">&lt;</span> <span class="n">normal_height</span> <span class="o">*</span> <span class="mf">0.18</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">markers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>拆解来看的话就是：</p>
+<ol>
+<li>
+<p><strong>只看正文区域</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">char</span><span class="p">[</span><span class="s2">&#34;top&#34;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">page_height</span> <span class="o">*</span> <span class="mf">0.82</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>页脚里的脚注编号不参与正文引用号判断。</p>
+</li>
+<li>
+<p><strong>计算正文正常字号/行高</strong>，数字字号显著小于本页正文中位字号。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">normal_height</span> <span class="o">=</span> <span class="n">median</span><span class="p">(</span><span class="n">正文字符高度</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>把相邻数字合并成候选</strong>
+由 <code>_digit_groups()</code> 完成，比如把连续的 <code>9</code>、<code>9</code> 合成 <code>99</code>。</p>
+</li>
+<li>
+<p><strong>排除年份/普通数字</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">continue</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>比如 <code>1975</code>、<code>1312</code> 直接排除。</p>
+</li>
+<li>
+<p><strong>字号必须明显小于正文</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">marker_height</span> <span class="o">&lt;</span> <span class="n">normal_height</span> <span class="o">*</span> <span class="mf">0.82</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>附近必须有正文正常字号字符</strong>
+也就是它不能孤零零出现在页脚、页码或其它区域， 避免把页码、表格数字、年份误判为角标。</p>
+</li>
+<li>
+<p><strong>位置必须上移</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">raised</span> <span class="o">=</span> <span class="n">neighbor_center</span> <span class="o">-</span> <span class="n">marker_center</span>
+<span class="n">raised</span> <span class="o">&gt;=</span> <span class="n">normal_height</span> <span class="o">*</span> <span class="mf">0.18</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这就是“右上角小数字”的关键：它比同一行正文基线更靠上。</p>
+</li>
+</ol>
+<p>最终生成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+    <span class="s2">&#34;ref_id&#34;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+    <span class="s2">&#34;marker_text&#34;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+    <span class="s2">&#34;page_num_int&#34;</span><span class="p">:</span> <span class="n">page_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&#34;marker_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="n">page</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span><span class="p">],</span>
+    <span class="s2">&#34;position_granularity&#34;</span><span class="p">:</span> <span class="s2">&#34;superscript&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;font_size&#34;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+    <span class="s2">&#34;line_height&#34;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+    <span class="s2">&#34;baseline_shift&#34;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="c1"># 然后提取即可</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>综合下来就是 用 <strong>字号 + 坐标 + 行高 + 上移量</strong> 判断。</p>
+<hr>
+<p>经过这个处理后，拿到了准确的引用角标，就能更好的理解我前文的数据结构，为啥是那样设计的了：</p>
+<ul>
+<li><code>citation_refs_nst</code> 是“正文里的角标引用点”列表；</li>
+<li><code>footnotes_obj</code> 是“页脚里的脚注来源文本”字典。它们靠 <code>footnote_key</code> 对应。</li>
+</ul>
+<p>可以把两者理解成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">citation_refs_nst  = 正文中哪里出现了角标
+footnotes_obj      = 这个角标编号对应的页脚来源是什么
+</code></pre></td></tr></table>
+</div>
+</div><p>对应关系是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">citation</span><span class="p">[</span><span class="s2">&#34;footnote_key&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;</span><span class="si">{页码}</span><span class="s2">:</span><span class="si">{脚注编号}</span><span class="s2">&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>例如我拿到一条数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;ref_id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+  <span class="s2">&#34;marker_text&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+  <span class="s2">&#34;page_num_int&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&#34;marker_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">458</span><span class="p">,</span> <span class="mi">462</span><span class="p">,</span> <span class="mi">303</span><span class="p">,</span> <span class="mi">311</span><span class="p">],</span>
+  <span class="s2">&#34;footnote_key&#34;</span><span class="p">:</span> <span class="s2">&#34;1:1&#34;</span><span class="p">,</span>
+  <span class="s2">&#34;footnote_page_num_int&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&#34;footnote_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">87</span><span class="p">,</span> <span class="mi">505</span><span class="p">,</span> <span class="mi">695</span><span class="p">,</span> <span class="mi">770</span><span class="p">],</span>
+  <span class="o">...</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>它对应：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">footnotes_obj</span><span class="p">[</span><span class="s2">&#34;1&#34;</span><span class="p">][</span><span class="s2">&#34;1&#34;</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>也就是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">footnotes_obj</span><span class="p">[</span><span class="n">页码</span><span class="p">][</span><span class="n">脚注编号</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>字段含义：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;ref_id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>脚注编号。这里是第 <code>1</code> 号引用。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;marker_text&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>正文里看到的角标文本。通常和 <code>ref_id</code> 一样。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;page_num_int&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>正文角标出现在哪一页。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;marker_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">458</span><span class="p">,</span> <span class="mi">462</span><span class="p">,</span> <span class="mi">303</span><span class="p">,</span> <span class="mi">311</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>正文角标的位置坐标：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">[页码, left, right, top, bottom]
+</code></pre></td></tr></table>
+</div>
+</div><p>也就是说第 1 页，角标框大概在：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">left=458, right=462, top=303, bottom=311
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;position_granularity&#34;</span><span class="p">:</span> <span class="s2">&#34;superscript&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>表示这个位置是按“上标/小角标字符”识别出来的，不是整行坐标。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;footnote_key&#34;</span><span class="p">:</span> <span class="s2">&#34;1:1&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>最重要的关联键。格式是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">页码:脚注编号
+</code></pre></td></tr></table>
+</div>
+</div><p>所以 <code>&quot;1:1&quot;</code> 就去找：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">footnotes_obj</span><span class="p">[</span><span class="s2">&#34;1&#34;</span><span class="p">][</span><span class="s2">&#34;1&#34;</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;footnote_page_num_int&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>脚注来源在第几页。当前只做同页脚注，所以一般和 <code>page_num_int</code> 一样。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;footnote_position_int&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">87</span><span class="p">,</span> <span class="mi">505</span><span class="p">,</span> <span class="mi">695</span><span class="p">,</span> <span class="mi">770</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>页脚脚注来源的位置坐标。格式同样是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">[页码, left, right, top, bottom]
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">{</span>
+  <span class="s2">&#34;confidence_flt&#34;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>置信度。现在 <code>0.9</code> 表示它是通过字号、位置、行高判断出来的上标引用号，比纯文本猜测可靠。</p>
+<p>完整关系是这样的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">citation</span> <span class="o">=</span> <span class="n">citation_refs_nst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">page_key</span><span class="p">,</span> <span class="n">ref_id</span> <span class="o">=</span> <span class="n">citation</span><span class="p">[</span><span class="s2">&#34;footnote_key&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;:&#34;</span><span class="p">)</span>
+<span class="n">footnote</span> <span class="o">=</span> <span class="n">footnotes_obj</span><span class="p">[</span><span class="n">page_key</span><span class="p">][</span><span class="n">ref_id</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>等价于：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">footnote</span> <span class="o">=</span> <span class="n">footnotes_obj</span><span class="p">[</span><span class="s2">&#34;1&#34;</span><span class="p">][</span><span class="s2">&#34;1&#34;</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后你就能得到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">citation</span><span class="p">[</span><span class="s2">&#34;marker_position_int&#34;</span><span class="p">]</span>   <span class="c1"># 正文角标位置</span>
+<span class="n">footnote</span><span class="p">[</span><span class="s2">&#34;text&#34;</span><span class="p">]</span>                  <span class="c1"># 页脚来源文本</span>
+<span class="n">footnote</span><span class="p">[</span><span class="s2">&#34;position_int&#34;</span><span class="p">]</span>          <span class="c1"># 页脚来源位置</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>所以前端展示时可以这样组织：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">正文第 1 页角标 1
+-&gt; 来源：Donald N. McCloskey, Knowledge and Persuasion in Economics ...
+-&gt; 角标坐标：[1, 458, 462, 303, 311]
+-&gt; 页脚坐标：[1, 87, 505, 695, 770]
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<p>但是如果你爱琢磨的话，那么问题又来了，你为啥要分别用两个数据结构，进行关联，一个数据串起来就够了啊？</p>
+<p>💗 恭喜你，发现了本质问题：角标如何和引用正确关联起来呢？
+一个自然而然的想法是，找到了脚本，拿着角标去页脚区域匹配，然而很遗憾的是经过实践，这样的话不是很准。
+最佳实践是：分两步走，不要关联！！！</p>
+<ol>
+<li>小角标就去正文找</li>
+<li>具体的引用内容就去页脚找</li>
+<li>分别建立两个数据结构，一个关联角标，一个关联引用内容，用页码做主建来关联即可。</li>
+</ol>
+<h3 id="23-拆分正文和非正文">2.3 拆分正文和非正文</h3>
+<p>前面说了一大堆，但是前面的准确与否，都依赖哪个区域是正文，于是准确区分正文、非正文，就摆上了台面，我的实践是抽象_detect_footer_region模块，做隔离层。</p>
+<p>而且页脚区域判断不能只用固定 page_height * 0.82，应该综合几何特征：</p>
+<ol>
+<li>位于页面底部区域。</li>
+<li>字号/行高明显小于正文。</li>
+<li>和正文最后一行之间有较大垂直间隔。</li>
+<li>有些 PDF 页脚上方有横线，可以作为强证据。</li>
+<li>页码要排除，不能当脚注。</li>
+<li>如果 layout/OCR 框能区分出底部小字号文本，就优先用框坐标；pypdf 文本只作为内容来源。</li>
+</ol>
+<p><img src="/RAG/parser/17.png" alt=""></p>
+<p>这几步有几个关键的步骤，能更快的定位：</p>
+<p><strong>1. “和正文最后一行之间有较大垂直间隔”怎么判断</strong></p>
+<p>先把页面里的文本框按 <code>top/bottom</code> 排序，然后估算本页正常正文行距：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">normal_line_gap = median(next_line.top - current_line.bottom)
+normal_line_height = median(line.bottom - line.top)
+</code></pre></td></tr></table>
+</div>
+</div><p>然后找疑似页脚第一行和正文最后一行之间的距离：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">gap = footer_first_line.top - body_last_line.bottom
+</code></pre></td></tr></table>
+</div>
+</div><p>如果满足类似条件，就认为它们之间有明显断层：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">gap &gt; max(normal_line_gap * 2.0, normal_line_height * 0.8)
+</code></pre></td></tr></table>
+</div>
+</div><p>也就是说，不是固定说“距离大于多少像素”，而是跟本页自己的正文行距比较。这样不同字号、不同 DPI、不同页面尺寸都能适配。</p>
+<p>比如正文正常行间距大概是 <code>12</code>，正文最后一行到底部脚注第一行之间突然有 <code>45</code>，那就是很强的页脚分隔信号。</p>
+<p><strong>2. “页脚上方有横线”怎么判断</strong></p>
+<p>如果用 <code>pdfplumber</code>，页面里通常能拿到 <code>page.lines</code> 或 <code>page.edges</code>。判断横线大概看这些字段：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">x0, x1, top, bottom, width, height
+</code></pre></td></tr></table>
+</div>
+</div><p>横线特征：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">width 足够长
+height 很小
+位于页面下方
+在疑似页脚文字上方
+</code></pre></td></tr></table>
+</div>
+</div><p>比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">is_horizontal_rule</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">line</span><span class="p">[</span><span class="s2">&#34;width&#34;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">page_width</span> <span class="o">*</span> <span class="mf">0.25</span>
+    <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="s2">&#34;bottom&#34;</span><span class="p">]</span> <span class="o">-</span> <span class="n">line</span><span class="p">[</span><span class="s2">&#34;top&#34;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">2</span>
+    <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="s2">&#34;top&#34;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">page_height</span> <span class="o">*</span> <span class="mf">0.55</span>
+<span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后再看它和脚注第一行的位置关系：横线必须在页脚文字上方，而且距离不能太远。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">rule.top &lt; footer_first_line.top
+footer_first_line.top - rule.top &lt; normal_line_height * 3
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>最终用打分决定 footer region</strong></p>
+<ul>
+<li>不是单个条件命中就算页脚。</li>
+<li>例如：
+<ul>
+<li>底部位置 +1</li>
+<li>小字号/小行高 +1</li>
+<li>大 gap +1</li>
+<li>横线 +2</li>
+<li>脚注编号结构 +1</li>
+</ul>
+</li>
+<li>达到阈值才生成 <code>footer_region_int</code>。</li>
+</ul>
+<p>同时我会保留一个低置信度 fallback，但它只作为兜底：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">footer_region_confidence_flt</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>也就是说，主路径会按几何区域判断；固定比例（page_height * 0.82）只在证据不足时兜底，不能再作为主要逻辑。</p>
+<p>这个模块具体实现那确实有点复杂，就不一一展示了，不过输入输出的展示，聪明的大家都能完美复刻实现思路的👋🏻：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">_detect_footer_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page_index</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="n">chars</span><span class="p">,</span> <span class="n">page_height</span><span class="p">,</span> <span class="n">pdf_lines</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&#34;body_boxes&#34;</span><span class="p">:</span> <span class="n">body_boxes</span><span class="p">,</span>
+            <span class="s2">&#34;footer_boxes&#34;</span><span class="p">:</span> <span class="n">footer_boxes</span><span class="p">,</span>
+            <span class="s2">&#34;body_region_int&#34;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_from_boxes</span><span class="p">(</span><span class="n">page_index</span><span class="p">,</span> <span class="n">body_boxes</span><span class="p">),</span>
+            <span class="s2">&#34;footer_region_int&#34;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_from_boxes</span><span class="p">(</span><span class="n">page_index</span><span class="p">,</span> <span class="n">footer_boxes</span><span class="p">),</span>
+            <span class="s2">&#34;footer_region_confidence_flt&#34;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s2">&#34;promoted_footer_lines&#34;</span><span class="p">:</span> <span class="n">promoted_footer_lines</span><span class="p">,</span>
+            <span class="s2">&#34;footer_line_positions&#34;</span><span class="p">:</span> <span class="n">footer_line_positions</span><span class="p">,</span>
+        <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>输入：提供了当前页面的所有基础布局和文本信息：</p>
+<ol>
+<li>
+<p><strong><code>page_index</code> (整数)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：当前处理的是 PDF 的第几页（从 0 开始计数）。</li>
+<li><strong>作用</strong>：用于在后续提取特定页面的 <code>pypdf_lines</code> 或生成区域坐标时作为索引依据。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>boxes</code> (列表，元素为字典)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：当前页面上的所有文本框（Bounding Box）集合。</li>
+<li><strong>结构</strong>：每个字典代表一个文本框，包含坐标（如 <code>x0</code>, <code>top</code>, <code>bottom</code> 等）和文本内容（如 <code>text</code>）。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>chars</code> (列表)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：当前页面上的字符级别信息。</li>
+<li><strong>作用</strong>：辅助计算页面宽度等几何信息。有时文本框的边界不够精确，需要通过字符的极值来框定范围。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>page_height</code> (浮点数/整数)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：当前页面的总高度（通常以 PDF 点/像素为单位）。</li>
+<li><strong>作用</strong>：作为计算页脚位置的基准。比如算法判断页脚必须出现在页面 62% 高度以下，就需要用到这个总高度。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>pdf_lines</code> (列表)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：当前页面上的线段信息（如表格线、分隔线）。</li>
+<li><strong>作用</strong>：用于检测主体和页脚之间是否存在“水平分隔线”（<code>has_rule</code>），这是判断脚注的一个重要特征。</li>
+</ul>
+</li>
+</ol>
+<p>输出是一个包含 7 个键的字典，它将页面上的文本框明确划分为了“主体”和“页脚”两部分，并给出了位置和置信度信息：</p>
+<ol>
+<li>
+<p><strong><code>body_boxes</code> (列表)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：被判定为<strong>主体内容</strong>的文本框列表。</li>
+<li><strong>说明</strong>：这些是排除了页脚后，页面上剩余的正文文本框。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>footer_boxes</code> (列表)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：被判定为<strong>页脚/脚注内容</strong>的文本框列表。</li>
+<li><strong>说明</strong>：如果算法认为没有页脚，该列表为空 <code>[]</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>body_region_int</code> (对象/整数)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：主体区域的边界范围。</li>
+<li><strong>说明</strong>：由 <code>self._position_from_boxes</code> 计算得出，通常是包含所有 <code>body_boxes</code> 的最大外接矩形（如 <code>[x0, y0, x1, y1]</code>），方便后续直接裁剪或定位主体区域。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>footer_region_int</code> (对象/整数或 None)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：页脚区域的边界范围。</li>
+<li><strong>说明</strong>：和 <code>body_region_int</code> 类似，是所有 <code>footer_boxes</code> 的外接矩形。如果没有检测到页脚，则为 <code>None</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>footer_region_confidence_flt</code> (浮点数)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：页脚检测的<strong>置信度分数</strong>。</li>
+<li><strong>说明</strong>：范围在 <code>0.0</code> 到 <code>0.99</code> 之间。分数越高，表示算法越确信这部分真的是页脚。如果没检测到页脚，分数为 <code>0.0</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>promoted_footer_lines</code> (列表)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：被“提升”为页脚的文本行。</li>
+<li><strong>说明</strong>：有些文本可能按常规排版不属于页脚，但在语义上属于脚注（比如通过正文的引用关系找到的脚注），<code>self._promoted_footer_lines</code> 会把这些特殊的行单独提取出来。</li>
+</ul>
+</li>
+<li>
+<p><strong><code>footer_line_positions</code> (列表)</strong>：</p>
+<ul>
+<li><strong>含义</strong>：页脚文本行的位置信息列表。</li>
+<li><strong>说明</strong>：遍历 <code>footer_boxes</code>，通过 <code>self._position_from_box</code> 计算出每一个页脚文本框的具体坐标位置，通常用于在 PDF 阅读器上高亮显示或做区域遮罩。</li>
+</ul>
+</li>
+</ol>
+<p>虽然这章节看起来比较复杂，但是用我们 codeview 时评语，能更好的领悟：你可以把这个模块想象成一个<strong>切蛋糕的机器</strong>：</p>
+<ul>
+<li><strong>输入</strong>：一整块蛋糕（<code>boxes</code>），蛋糕的高（<code>page_height</code>），蛋糕上的装饰线（<code>pdf_lines</code>）等。</li>
+<li><strong>处理</strong>：机器在蛋糕 62% 的高度往下找，看看有没有明显的缝隙或装饰线，判断底部那一小块是不是底座（页脚）。</li>
+<li><strong>输出</strong>：上半部分主体蛋糕（<code>body_boxes</code> 和 <code>body_region_int</code>）、下半部分底座（<code>footer_boxes</code> 和 <code>footer_region_int</code>）、以及机器对“这确实是底座”的把握程度（<code>footer_region_confidence_flt</code>）。</li>
+</ul>
+<h3 id="24-rag检索增强-cch">2.4 RAG检索增强-CCH</h3>
+<p>所谓的CCH就是上下文标题增强：Contextual Chunk Headers。</p>
+<p>这是一种为了RAG提高准确性的方法，朴素的标准分块方法经常丢失重要上下文，从而使检索效果降低。</p>
+<p>所以通过上下文片段标题（CCH）通过在嵌入每个片段之前为其添加高级上下文（如文档标题或章节标题）来增强RAG，这提高了检索质量并防止了脱离上下文的回复。</p>
+<p>也就是说我们的非结构化内容（PDF等等）输入后：</p>
+<ul>
+<li>如果有目录，最好能提取出来单独用数据结构保存，这样在检索时，能更好的匹配到上下文。</li>
+<li>如果没有目录，现在都有 LLM 了，可以让 LLM 帮我们做文本摘要生成。</li>
+</ul>
+<p>我们运营、策划的知识库还是比较规范的，都处理成了标准带目录的。
+在当前架构优化中，使用 pypdf 提取目录outLines，</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 通过深度优先搜索遍历目录</span>
+<span class="o">...</span>
+<span class="n">outlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="o">.</span><span class="n">outline</span>
+
+<span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outlines</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">[</span><span class="s2">&#34;/Title&#34;</span><span class="p">],</span> <span class="n">depth</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">dfs</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">dfs</span><span class="p">(</span><span class="n">outlines</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="o">...</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>最终生成的目录结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="p">[</span>
+    <span class="p">(</span><span class="s2">&#34;目录&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&#34;第一章 介绍&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&#34;1.1 背景介绍&#34;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&#34;1.2 目的&#34;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&#34;1.3 结构&#34;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&#34;第二章 系统架构&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 
+    <span class="p">(</span><span class="s2">&#34;2.1 系统概述&#34;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="c1"># 第 1 章 介绍        depth=0</span>
+<span class="c1"># 1.1 背景           depth=1</span>
+<span class="c1"># 1.2 目的           depth=1</span>
+<span class="c1"># 第 2 章 系统架构        depth=0</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="25-倍率转换">2.5 倍率转换</h3>
+<p>通过 把 PDF 页面按 3 倍分辨率渲染成图片，让 OCR / Layout / TSR 模型看得更清楚，同时再用 <code>/ zoomin</code> 把模型输出坐标还原回 PDF 坐标。**</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fnm</span><span class="p">,</span> <span class="n">need_image</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zoomin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">return_html</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在整个流程处理中，都用到了这个倍率转换：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="bp">self</span><span class="o">.</span><span class="n">__images__</span><span class="p">(</span><span class="n">fnm</span><span class="p">,</span> <span class="n">zoomin</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_layouts_rec</span><span class="p">(</span><span class="n">zoomin</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_table_transformer_job</span><span class="p">(</span><span class="n">zoomin</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__filterout_scraps</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">),</span> <span class="n">zoomin</span><span class="p">),</span> <span class="n">tbls</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>为什么默认是 <code>3</code>？
+首先这也是一个工程实践的最佳经验值。</p>
+<ol>
+<li>PDF 本身不是图片，vision 模型需要图片输入</li>
+</ol>
+<p>在 <code>__images__()</code> 里：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="bp">self</span><span class="o">.</span><span class="n">page_images</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">to_image</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="mi">72</span> <span class="o">*</span> <span class="n">zoomin</span><span class="p">)</span><span class="o">.</span><span class="n">annotated</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="n">page_from</span><span class="p">:</span><span class="n">page_to</span><span class="p">])</span>
+<span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>PDF 默认 72 DPI（ 72 磅 = 1 英寸）。<code>zoomin=3</code> 后就是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">72 * 3 = 216 DPI
+</code></pre></td></tr></table>
+</div>
+</div><p>这会把页面渲染得更清楚。</p>
+<p>如果不放大，比如 72 DPI，很多小字、表格线、页脚文字，对 OCR 和版面模型来说太糊。</p>
+<ol start="2">
+<li>OCR / Layout / TSR 都在图片坐标系里工作</li>
+</ol>
+<p>比如 OCR 检测到了图片上的文字框：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">图片坐标：x0=300, x1=900, top=150, bottom=210
+</code></pre></td></tr></table>
+</div>
+</div><p>但原 PDF 坐标应该除以 <code>ZM</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="s2">&#34;x0&#34;</span><span class="p">:</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ZM</span>
+<span class="s2">&#34;x1&#34;</span><span class="p">:</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ZM</span>
+<span class="s2">&#34;top&#34;</span><span class="p">:</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ZM</span>
+<span class="s2">&#34;bottom&#34;</span><span class="p">:</span> <span class="n">b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ZM</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果 <code>ZM=3</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">PDF 坐标：x0=100, x1=300, top=50, bottom=70
+模型看高清图
+代码保存 PDF 原始坐标
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li>表格裁剪和引用截图也依赖这个倍率</li>
+</ol>
+<p>裁剪表格时，PDF 坐标要乘回图片坐标：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_images</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">left</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">,</span> <span class="n">top</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">,</span> <span class="n">right</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">,</span> <span class="n">bott</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">)))</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>生成引用截图时也是类似逻辑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="bp">self</span><span class="o">.</span><span class="n">page_images</span><span class="p">[</span><span class="n">pns</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span>
+    <span class="n">left</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">,</span>
+    <span class="n">top</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">,</span>
+    <span class="n">right</span> <span class="o">*</span> <span class="n">ZM</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">))</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>所以 <code>zoomin</code> 是两个坐标系统之间的比例尺：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">PDF 坐标 * zoomin = 图片像素坐标
+图片像素坐标 / zoomin = PDF 坐标
+</code></pre></td></tr></table>
+</div>
+</div><ol start="4">
+<li>为什么不是 1，也不是越大越好？</li>
+</ol>
+<p><code>zoomin=1</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">优点：快、省内存
+缺点：图片分辨率低，OCR/Layout/TSR 容易漏检
+</code></pre></td></tr></table>
+</div>
+</div><p><code>zoomin=3</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">清晰度和性能的折中
+216 DPI 对 OCR、表格线、版面区域比较友好
+</code></pre></td></tr></table>
+</div>
+</div><p><code>zoomin=9</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">更清晰，但图片非常大，内存和速度成本高
+</code></pre></td></tr></table>
+</div>
+</div><p>如果实在拿不到数据，架构中有放大重试：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">zoomin</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__images__</span><span class="p">(</span><span class="n">fnm</span><span class="p">,</span> <span class="n">zoomin</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">page_from</span><span class="p">,</span> <span class="n">page_to</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>默认先用 <code>3</code>，如果完全没识别到文本框，再尝试 <code>9</code>。</p>
+<h3 id="26-plain-parser">2.6 plain Parser</h3>
+<p>经过前面的设计，是不是觉得这个 Parser 太复杂了，虽然结果精准了，但随之带来的问题就是慢，所以如果我们上传知识库时，知道有没有复杂的图片、表格、公式等，就可以选择不同的解析器：</p>
+<ul>
+<li>
+<p><strong>plain Parser</strong>：纯文本解析器，只解析文本框，不解析图片、表格、公式等。</p>
+</li>
+<li>
+<p><strong>full Parser</strong>：全解析器，解析文本框、图片、表格、公式等。</p>
+</li>
+<li>
+<p>新增策略层 <code>pdf_parser_strategy.py</code>：</p>
+<ul>
+<li>定义 <code>PdfParserMode = DeepDOC | Plain Text | Auto</code>，统一模式校验和归一化。</li>
+<li>策略层不加载 OCR/Layout/TSR 模型，只做低成本探测。</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">DeepDOC</span>      <span class="o">-&gt;</span> <span class="n">强制复杂解析</span>
+<span class="n">Plain</span> <span class="n">Text</span>   <span class="o">-&gt;</span> <span class="n">强制</span> <span class="n">PlainParser</span>
+<span class="n">Auto</span>         <span class="o">-&gt;</span> <span class="n">先检查</span> <span class="n">PDF</span><span class="err">，</span><span class="n">再决定</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这里的检测算法判断逻辑分为两层：</p>
+<ol>
+<li>小中型 PDF：轻量全量扫描</li>
+</ol>
+<p>不是渲染图片，也不是跑 OCR/Layout/TSR，只用 <code>pdfplumber</code> 读取每页的轻量信息：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">extract_text 长度
+chars 数量
+images 面积占比
+find_tables 结果
+lines/rects 数量
+</code></pre></td></tr></table>
+</div>
+</div><p>如果页数不大，比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">auto_full_scan_max_pages</span> <span class="o">=</span> <span class="mi">30</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>那就扫描全部页面。</p>
+<p>只要任意一页出现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">疑似扫描页
+疑似表格页
+图片重页
+文本抽取失败页
+</code></pre></td></tr></table>
+</div>
+</div><p>直接返回：<code>DeepDOC</code></p>
+<p>只有所有页面都通过“简单纯文本”检查，才返回<code>Plain Text</code></p>
+<ol start="2">
+<li>超大 PDF：分层抽样 + 保守兜底</li>
+</ol>
+<p>如果 PDF 很大，比如30页以上，全部 <code>pdfplumber</code> 检查也可能慢。此时不要只看前几页，而是做 <strong>分层抽样</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">前几页
+后几页
+25% 位置
+50% 位置
+75% 位置
+每隔 N 页抽一页
+</code></pre></td></tr></table>
+</div>
+</div><p>例如 300 页，可以抽：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">0,1,2,
+25,50,75,100,125,150,175,200,225,250,
+297,298,299
+</code></pre></td></tr></table>
+</div>
+</div><p>但注意：<strong>抽样无法证明后面没有复杂页</strong>。</p>
+<p>所以默认逻辑是：超大 PDF 如果不能全量轻量检查，默认 DeepDOC.</p>
+<p>显式配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="s2">&#34;auto_allow_sampled_plain&#34;</span><span class="p">:</span> <span class="kc">False</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>只有业务明确接受风险，才允许超大 PDF 通过抽样判断为 PlainParser。</p>
+<p>也就是说当前端上传超大 PDF 时，如果选择 <code>Auto</code>，默认会返回：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">1. layout_recognize = &#34;DeepDOC&#34;
+   -&gt; 强制 DeepDOC
+
+2. layout_recognize = &#34;Plain Text&#34;
+   -&gt; 强制 PlainParser
+
+3. layout_recognize = &#34;Auto&#34;
+   -&gt; 启用策略判断
+</code></pre></td></tr></table>
+</div>
+</div><p>Auto 内部：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">如果 need_position=True
+    -&gt; DeepDOC
+
+读取总页数
+
+如果页数 &lt;= auto_full_scan_max_pages
+    -&gt; 全页轻量扫描
+    -&gt; 全部简单才 Plain Text
+    -&gt; 任一复杂就 DeepDOC
+
+如果页数 &gt; auto_full_scan_max_pages
+    -&gt; 默认 DeepDOC
+    -&gt; 除非 auto_allow_sampled_plain=True
+       才做分层抽样判断
+</code></pre></td></tr></table>
+</div>
+</div><p>算法模块的极简实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">choose_pdf_parser_mode</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">parser_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;layout_recognize&#34;</span><span class="p">,</span> <span class="s2">&#34;DeepDOC&#34;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&#34;DeepDOC&#34;</span><span class="p">,</span> <span class="s2">&#34;Plain Text&#34;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">mode</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">&#34;Auto&#34;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&#34;DeepDOC&#34;</span>
+
+    <span class="k">if</span> <span class="n">parser_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;need_position&#34;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&#34;DeepDOC&#34;</span>
+
+    <span class="n">page_count</span> <span class="o">=</span> <span class="n">get_pdf_page_count</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">page_count</span> <span class="o">&lt;=</span> <span class="n">parser_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;auto_full_scan_max_pages&#34;</span><span class="p">,</span> <span class="mi">80</span><span class="p">):</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">inspect_pages</span><span class="p">(</span><span class="n">all_pages</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&#34;Plain Text&#34;</span> <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">all_pages_simple</span> <span class="k">else</span> <span class="s2">&#34;DeepDOC&#34;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">parser_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;auto_allow_sampled_plain&#34;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&#34;DeepDOC&#34;</span>
+
+    <span class="n">sampled_pages</span> <span class="o">=</span> <span class="n">stratified_sample</span><span class="p">(</span><span class="n">page_count</span><span class="p">)</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">inspect_pages</span><span class="p">(</span><span class="n">sampled_pages</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&#34;Plain Text&#34;</span> <span class="k">if</span> <span class="n">stats</span><span class="o">.</span><span class="n">sample_pages_simple</span> <span class="k">else</span> <span class="s2">&#34;DeepDOC&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>默认行为保持不变：不传 <code>parser_mode</code> 时仍走 <code>DeepDOC</code>。</li>
+<li>前端选择的是“用户意图”，后端仍负责校验、归一化和安全回落。</li>
+</ul>
+<p>在不断地踩坑、解决、在踩坑，螺旋递进中，不断感悟一哦个原则：工程优化没有最好，只有适配当前项目需求才行，不要过度设计！！！</p>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">沐桢</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2024-05-10
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/rag/">RAG</a>
+          <a href="/tags/pdf-parser/">PDF-parser</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/bff%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">BFF的服务端设计</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/">
+            <span class="next-text nav-default">RAG设计之Chunk处理</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2024-05-10 23:59:00 \u002b0800 CST',
+        title: 'RAG设计之PDF解析器优化',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'hugo-blog-comments',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>沐桢</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+  
+</body>
+</html>

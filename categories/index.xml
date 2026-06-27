@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Categories on 吴少在Coding</title>
+    <title>Categories on 林川在Coding</title>
     <link>http://wushao666.github.io/categories/</link>
-    <description>Recent content in Categories on 吴少在Coding</description>
+    <description>Recent content in Categories on 林川在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
     <lastBuildDate>Mon, 26 Aug 2024 10:35:43 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
@@ -19,7 +19,7 @@
     <item>
       <title>AI-LLM</title>
       <link>http://wushao666.github.io/categories/ai-llm/</link>
-      <pubDate>Fri, 08 Mar 2024 23:51:40 +0800</pubDate>
+      <pubDate>Fri, 10 May 2024 23:59:00 +0800</pubDate>
       
       <guid>http://wushao666.github.io/categories/ai-llm/</guid>
       <description></description>

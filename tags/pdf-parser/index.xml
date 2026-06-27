@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>PDF-parser on 林川在Coding</title>
+    <link>http://wushao666.github.io/tags/pdf-parser/</link>
+    <description>Recent content in PDF-parser on 林川在Coding</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Fri, 10 May 2024 23:59:00 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/tags/pdf-parser/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RAG设计之PDF解析器优化</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E8%A7%A3%E6%9E%90%E5%99%A8%E8%AE%BE%E8%AE%A1/</link>
+      <pubDate>Fri, 10 May 2024 23:59:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E8%A7%A3%E6%9E%90%E5%99%A8%E8%AE%BE%E8%AE%A1/</guid>
+      <description>&lt;p&gt;本文主题是 pdf 解析器，是离线解析文档的入口，也是比较难的一部分，因为 PDF 里面的内容比较复杂，需要考虑很多细节。
+例如：表格数据（尤以多个表格排布最难）、图片、页脚引用等等。本文使用到的资料均已脱敏，不涉及到任何公司隐私，仅做个人复盘。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
