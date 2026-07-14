@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>多Agent编排之重构检查点恢复 - 林川在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="沐桢" /><meta name="description" content="还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？ 遗留了一个小问题：无法从中断的具体 Agent/具体 phase 精确继续，是按照固定的流程继续" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="多Agent编排之重构检查点恢复" />
+<meta property="og:description" content="还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？ 遗留了一个小问题：无法从中断的具体 Agent/具体 phase 精确继续，是按照固定的流程继续" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2026-02-15T00:39:00+08:00" />
+<meta property="article:modified_time" content="2026-02-15T00:39:00+08:00" />
+
+<meta itemprop="name" content="多Agent编排之重构检查点恢复">
+<meta itemprop="description" content="还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？ 遗留了一个小问题：无法从中断的具体 Agent/具体 phase 精确继续，是按照固定的流程继续"><meta itemprop="datePublished" content="2026-02-15T00:39:00+08:00" />
+<meta itemprop="dateModified" content="2026-02-15T00:39:00+08:00" />
+<meta itemprop="wordCount" content="1486">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="多Agent编排之重构检查点恢复"/>
+<meta name="twitter:description" content="还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？ 遗留了一个小问题：无法从中断的具体 Agent/具体 phase 精确继续，是按照固定的流程继续"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">林川在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">林川在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">多Agent编排之重构检查点恢复</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2026年02月15日 00:39 </span>
+        
+          <span class="more-meta"> 约 1486 字 </span>
+          <span class="more-meta"> 预计阅读 3 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#21-之前咋取消的">2.1 之前咋取消的？</a></li>
+        <li><a href="#22-优化取消逻辑">2.2 <strong>优化取消逻辑</strong></a></li>
+        <li><a href="#23-之前咋恢复的">2.3 之前咋恢复的？</a></li>
+        <li><a href="#24-优化恢复逻辑">2.4 <strong>优化恢复逻辑</strong></a>
+          <ul>
+            <li><a href="#241-定位问题">2.4.1 定位问题</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？</p>
+<p>遗留了一个<a href="https://vvushaolin.com/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/#34-%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D">小问题</a>：<strong>无法从中断的具体 Agent/具体 phase 精确继续</strong>，是按照固定的流程继续重新跑的。
+今天我们就来完善一下。</p>
+<h2 id="21-之前咋取消的">2.1 之前咋取消的？</h2>
+<p>前端在的 <code>handleStop</code> 做了两层取消：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="k">await</span> <span class="nx">readerRef</span><span class="p">.</span><span class="nx">current</span><span class="p">.</span><span class="nx">cancel</span><span class="p">()</span>
+<span class="k">await</span> <span class="nx">api</span><span class="p">.</span><span class="nx">session</span><span class="p">.</span><span class="nx">cancelResearch</span><span class="p">(</span><span class="nx">currentSessionIdRef</span><span class="p">.</span><span class="nx">current</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>第一层：取消浏览器正在读取的 SSE 流。<br>
+也就是停止前端继续消费 <code>/research/stream</code> 返回的数据。</p>
+<p>第二层：调用后端取消接口。<br>
+封装在<code>POST /research/cancel/{session_id}</code></p>
+<p>后端在接着会把取消标志写入 Redis：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;research:cancel:</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&#34;cancelled&#34;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">expire</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后调度器周期性检查：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="n">is_research_cancelled</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>执行 Agent 时，每 0.5 秒左右检查一次。如果发现取消，就：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当时的取消链路是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-tex" data-lang="tex">点击停止
+  -&gt; 前端取消 reader
+  -&gt; 前端 POST /research/cancel/<span class="nb">{</span>session<span class="nb">_</span>id<span class="nb">}</span>
+  -&gt; 后端 Redis 写 cancel flag
+  -&gt; 调度器检查到取消
+  -&gt; cancel 当前 Agent task
+  -&gt; 结束研究流程
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="22-优化取消逻辑">2.2 <strong>优化取消逻辑</strong></h2>
+<p>再回头看，是不是有点问题：当前逻辑下，前端是先 <code>reader.cancel()</code>，再调用后端取消接口。
+这样用户体验上很快停止，但前端大概率收不到后端后续的 <code>research_cancelled</code> 事件，因为 SSE 读取已经被前端主动断开了。</p>
+<p>优化后，更合理的顺序应该是是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">先 POST /research/cancel/{session_id}
+再 abort/cancel SSE reader
+</code></pre></td></tr></table>
+</div>
+</div><p>或者两个并行发，但 UI 直接本地标记为“已停止”。</p>
+<h2 id="23-之前咋恢复的">2.3 之前咋恢复的？</h2>
+<p>前端的“恢复展示检查点”，在进入会话时，页面先调用：[/pages/chat/index.tsx]</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="nx">api</span><span class="p">.</span><span class="nx">session</span><span class="p">.</span><span class="nx">getFullResearchCheckpoint</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>[/api/session.ts]然后调用后端接口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="nx">GET</span> <span class="o">/</span><span class="nx">research</span><span class="o">/</span><span class="nx">checkpoint</span><span class="o">/</span><span class="p">{</span><span class="nx">session_id</span><span class="p">}</span><span class="o">/</span><span class="nx">full</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>它会恢复：</p>
+<ul>
+<li>研究步骤 <code>research_steps</code></li>
+<li>搜索结果 <code>search_results</code></li>
+<li>图表 <code>charts</code></li>
+<li>知识图谱 <code>knowledge_graph</code></li>
+<li>已生成报告 <code>streaming_report</code></li>
+<li>引用来源 <code>references</code></li>
+</ul>
+<p>所以能够做到如下的“恢复能力“：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">刷新页面 / 回到会话
+  -&gt; 加载 checkpoint
+  -&gt; 恢复前端研究过程 UI
+  -&gt; 恢复已生成报告/图表/搜索结果
+</code></pre></td></tr></table>
+</div>
+</div><p>但这只是<strong>恢复展示</strong>，不是严格意义上的“接着上次继续执行”。</p>
+<h2 id="24-优化恢复逻辑">2.4 <strong>优化恢复逻辑</strong></h2>
+<p>很明显，[/app/router/research_router.py]后端的接口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">POST /research/resume/{session_id}
+</code></pre></td></tr></table>
+</div>
+</div><p>它会：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="n">service_v2</span><span class="o">.</span><span class="n">research</span><span class="p">(</span><span class="n">query</span><span class="o">=...</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>而 <code>DeepResearchGraph.run()</code> 也会加载 checkpoint：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_checkpoint</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>幸好这个之前设计的逻辑，就预留了优化空间。</p>
+<p>要想优化恢复，我们要定位清楚问题，找到了问题，其实都有办法解决.</p>
+<p>很多时候，正是因为稀里糊涂的设计的代码，改都不知道咋改，<code>**AI 时代发现问题，才是更重要的能力**</code>。</p>
+<h3 id="241-定位问题">2.4.1 定位问题</h3>
+<p>问题出现在工作流设计了一个固定阶段：当前 <code>_run_simplified()</code> 不是 phase-aware resume。它加载 state 后，仍然从 <code>Phase 1: Plan</code> 开始顺序跑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Plan -&gt; Research -&gt; Analyze -&gt; Write -&gt; Review...
+</code></pre></td></tr></table>
+</div>
+</div><p>所以导致现在的 resume 更像：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">加载旧 state，然后重新进入完整流程
+</code></pre></td></tr></table>
+</div>
+</div><p>不是纯粹的恢复：<code>从上次中断的 phase 后面继续</code></p>
+<p>所以要真正做到“取消后继续执行”，应该这样设计：</p>
+<p>需要三个关键改造：</p>
+<ol>
+<li>取消时把 checkpoint 状态标记为 <code>paused</code></li>
+</ol>
+<p>当前 <code>save_checkpoint()</code> 默认写 <code>running</code>，完成时写 <code>completed</code>，失败时写 <code>failed</code>。取消时应该补一个：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="n">checkpoint_service</span><span class="o">.</span><span class="n">update_status</span><span class="p">(</span><span class="n">session_id</span><span class="p">,</span> <span class="s2">&#34;paused&#34;</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>并保存：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">phase
+iteration
+last_completed_step
+next_step
+ui_state
+state_json
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>调度器变成 <code>phase-aware resume</code></li>
+</ol>
+<p><code>_run_simplified(state)</code> 不能每次都从 planning 开始。应该根据 checkpoint 里的状态决定从哪里继续：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">phase == planning/init       -&gt; 从 planning 开始
+phase == researching         -&gt; 从 researching 或下一安全点开始
+phase == analyzing           -&gt; 从 analyzing 开始
+phase == writing             -&gt; 从 writing 开始
+phase == reviewing           -&gt; 从 reviewing 开始
+phase == re_researching      -&gt; 从 supplementary search 开始
+phase == revising            -&gt; 从 revising 开始
+</code></pre></td></tr></table>
+</div>
+</div><p>同时也要记录 <code>completed_steps</code>，恢复时才能够跳过已完成阶段：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">completed_steps = [&#34;planning&#34;, &#34;researching&#34;]
+next_step = &#34;analyzing&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>这样不会重复搜索、重复写报告。</p>
+<ol start="3">
+<li>前端应该接入 resume 流</li>
+</ol>
+<p>前端现在只有 <code>cancelResearch</code> 和 <code>getFullResearchCheckpoint</code>，缺少：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="nx">resumeResearch</span><span class="p">(</span><span class="nx">sessionId</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>应该重新封装：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="nx">POST</span> <span class="o">/</span><span class="nx">research</span><span class="o">/</span><span class="nx">resume</span><span class="o">/</span><span class="p">{</span><span class="nx">session_id</span><span class="p">}</span>
+<span class="nx">Accept</span>: <span class="kt">text</span><span class="o">/</span><span class="nx">event</span><span class="o">-</span><span class="nx">stream</span>
+<span class="nx">responseType</span><span class="o">:</span> <span class="s1">&#39;stream&#39;</span>
+<span class="nx">adapter</span><span class="o">:</span> <span class="s1">&#39;fetch&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后 UI 上在检测到 checkpoint.status 是 <code>paused</code> 或 <code>running</code> 时，显示“继续研究”按钮。点击后复用现有 SSE 解析逻辑 <code>parseData()</code>，继续把事件写入同一套 <code>researchStepsRef</code> / <code>researchDetailsRef</code>。</p>
+<p>重新设计后的链路：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">点击停止
+  -&gt; 后端取消
+  -&gt; 保存 paused checkpoint
+  -&gt; 前端展示“已暂停，可继续”
+
+点击继续研究
+  -&gt; POST /research/resume/{session_id}
+  -&gt; 后端加载 checkpoint
+  -&gt; 调度器从 next_step 继续
+  -&gt; SSE 继续推送
+  -&gt; 前端复用原来的研究过程 UI
+</code></pre></td></tr></table>
+</div>
+</div><p>经过这次重构设计，现在才是真的“能取消、能恢复展示”✅</p>
+
+    </div>
+
+    <div class="post-copyright">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    
+</div><footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B%E4%B9%8B%E6%89%8B%E5%86%99%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B601-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">古法编程之手写爬虫框架01-基础架构</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/">
+            <span class="next-text nav-default">多Agent编排之手写调度器</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2026-02-15 00:39:00 \u002b0800 CST',
+        title: '多Agent编排之重构检查点恢复',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'hugo-blog-comments',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>沐桢</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+  
+</body>
+</html>

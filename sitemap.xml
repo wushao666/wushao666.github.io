@@ -10,7 +10,7 @@
   
   <url>
     <loc>http://wushao666.github.io/post/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -24,14 +24,21 @@
   
   <url>
     <loc>http://wushao666.github.io/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/</loc>
+    <lastmod>2026-02-15T00:39:00+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/</loc>
-    <lastmod>2026-01-08T23:56:26+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -66,63 +73,63 @@
   
   <url>
     <loc>http://wushao666.github.io/categories/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/categories/ai-llm/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/rag/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%AF%84%E4%BC%B0%E7%B3%BB%E7%BB%9F/</loc>
-    <lastmod>2024-07-29T22:10:00+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/</loc>
-    <lastmod>2024-07-15T00:33:00+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/%E5%88%86%E8%AF%8D%E5%99%A8/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/pdf-parser/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/</loc>
-    <lastmod>2024-06-30T00:21:00+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -143,21 +150,21 @@
   
   <url>
     <loc>http://wushao666.github.io/tags/chunk%E5%88%87%E5%88%86%E5%8E%9F%E5%88%99/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</loc>
-    <lastmod>2026-06-28T20:34:28+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -206,21 +213,21 @@
   
   <url>
     <loc>http://wushao666.github.io/categories/web%E4%B8%96%E7%95%8C/</loc>
-    <lastmod>2022-09-27T15:47:11+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/go/</loc>
-    <lastmod>2022-09-16T19:00:11+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B602-%E8%B7%AF%E7%94%B1%E5%AE%9E%E7%8E%B0/</loc>
-    <lastmod>2022-09-16T19:00:11+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -234,21 +241,21 @@
   
   <url>
     <loc>http://wushao666.github.io/categories/vue/</loc>
-    <lastmod>2024-11-24T14:46:48+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/vue3/</loc>
-    <lastmod>2024-11-24T14:46:48+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</loc>
-    <lastmod>2023-04-02T13:03:52+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -276,77 +283,77 @@
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</loc>
-    <lastmod>2023-04-02T13:03:52+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/</loc>
-    <lastmod>2022-10-10T16:46:12+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</loc>
-    <lastmod>2022-10-09T23:07:10+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</loc>
-    <lastmod>2022-10-10T16:46:12+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</loc>
-    <lastmod>2022-10-09T17:00:41+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</loc>
-    <lastmod>2024-11-24T14:46:48+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/vue/</loc>
-    <lastmod>2023-04-02T13:03:52+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</loc>
-    <lastmod>2023-04-02T13:03:52+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/categories/javascript/</loc>
-    <lastmod>2026-04-04T17:49:01+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</loc>
-    <lastmod>2026-04-04T17:49:01+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/tags/%E5%89%8D%E7%AB%AF/</loc>
-    <lastmod>2026-04-04T17:49:01+08:00</lastmod>
+    <lastmod>2026-07-14T09:29:07+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
