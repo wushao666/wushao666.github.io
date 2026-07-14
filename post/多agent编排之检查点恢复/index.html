@@ -44,11 +44,11 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2026-02-15T00:39:00+08:00" />
-<meta property="article:modified_time" content="2026-02-15T00:39:00+08:00" />
+<meta property="article:modified_time" content="2026-07-14T16:31:59+08:00" />
 
 <meta itemprop="name" content="多Agent编排之重构检查点恢复">
 <meta itemprop="description" content="还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？ 遗留了一个小问题：无法从中断的具体 Agent/具体 phase 精确继续，是按照固定的流程继续"><meta itemprop="datePublished" content="2026-02-15T00:39:00+08:00" />
-<meta itemprop="dateModified" content="2026-02-15T00:39:00+08:00" />
+<meta itemprop="dateModified" content="2026-07-14T16:31:59+08:00" />
 <meta itemprop="wordCount" content="1486">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="多Agent编排之重构检查点恢复"/>
@@ -163,7 +163,7 @@
 </div>
     <div class="post-content">
       <p>还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？</p>
-<p>遗留了一个<a href="https://vvushaolin.com/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/#34-%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D">小问题</a>：<strong>无法从中断的具体 Agent/具体 phase 精确继续</strong>，是按照固定的流程继续重新跑的。
+<p>遗留了一个<a href="https://vvushaolin.com/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/#341-%E5%BE%85%E4%BC%98%E5%8C%96">小问题</a>：<strong>无法从中断的具体 Agent/具体 phase 精确继续</strong>，是按照固定的流程继续重新跑的。
 今天我们就来完善一下。</p>
 <h2 id="21-之前咋取消的">2.1 之前咋取消的？</h2>
 <p>前端在的 <code>handleStop</code> 做了两层取消：</p>
