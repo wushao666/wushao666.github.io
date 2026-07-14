@@ -43,13 +43,13 @@
 <meta property="og:description" content="在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2022-12-06T20:58:23+08:00" />
+<meta property="article:published_time" content="2022-02-06T20:58:23+08:00" />
 <meta property="article:modified_time" content="2023-04-02T13:03:52+08:00" />
 
 <meta itemprop="name" content="Vue的组件间通信">
-<meta itemprop="description" content="在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法"><meta itemprop="datePublished" content="2022-12-06T20:58:23+08:00" />
+<meta itemprop="description" content="在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法"><meta itemprop="datePublished" content="2022-02-06T20:58:23+08:00" />
 <meta itemprop="dateModified" content="2023-04-02T13:03:52+08:00" />
-<meta itemprop="wordCount" content="1482">
+<meta itemprop="wordCount" content="1506">
 <meta itemprop="keywords" content="vue," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Vue的组件间通信"/>
 <meta name="twitter:description" content="在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法"/>
@@ -132,12 +132,12 @@
       <h1 class="post-title">Vue的组件间通信</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2022-12-06 </span>
+        <span class="post-time"> 2022年02月06日 20:58 </span>
         <div class="post-category">
             <a href="/categories/vue/"> vue </a>
             </div>
-          <span class="more-meta"> 约 1482 字 </span>
-          <span class="more-meta"> 预计阅读 3 分钟 </span>
+          <span class="more-meta"> 约 1506 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
         
       </div>
     </header>
@@ -172,7 +172,7 @@
     <div class="post-content">
       <p>在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法的过程。
 通常组件之间的关系大致可以分为: 父子组件、多级嵌套组件（也可以叫爷孙组件）、兄弟组件三大类。
-本文中的 vue3 的写法都是使用<script setup>的组合式 api 的写法。</p>
+本文中的 vue3 的写法都是使用<code>&lt;script setup&gt;</code>的组合式 api 的写法。</p>
 <h2 id="父子组件通信">父子组件通信</h2>
 <p>对于父子组件通信，是最基础也是最常见的组间模式，一般常用的有三种方式：</p>
 <ol>
@@ -187,7 +187,7 @@
 <li>子组件不能修改 props 的值，数据流是单向的，只能是父 -&gt; 子</li>
 <li>子组件通过$emit 方式抛出方法，父组件 v-on 监听对应的方法，对数据做处理。</li>
 </ol>
-<p>对于 vue3 来说，使用 <script setup> 的组合式 API 新方式是：</p>
+<p>对于 vue3 来说，使用 <code>&lt;script setup&gt;</code> 的组合式 API 新方式是：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -256,7 +256,7 @@
 <ul>
 <li>移除了$children，建议使用$refs 来获取子组件</li>
 <li>不建议使用$parent，需要通过<code>getCurrentInstance</code>，进而去找到 parent</li>
-<li>同时使用 <script setup> 的组合式 API 的内容都是私有的，需要通过 defineExpose()方法暴露出去</li>
+<li>同时使用 <code>&lt;script setup&gt;</code> 的组合式 API 的内容都是私有的，需要通过 defineExpose()方法暴露出去</li>
 <li>$refs 的使用注意定义的变量要和组件上设置的 ref 属性值一样</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -292,7 +292,7 @@
 <span class="p">});</span>
 
 <span class="c1">// Level3是子组件
-</span><span class="c1">// 使用&lt;script setup&gt; 的组件是默认私有的，需要暴露出去，refs才能使用
+</span><span class="c1">// 使用`&lt;script setup&gt;` 的组件是默认私有的，需要暴露出去，refs才能使用
 </span><span class="c1"></span><span class="nx">defineExpose</span><span class="p">({</span>
   <span class="nx">bx</span><span class="p">,</span>
   <span class="nx">test333</span><span class="p">,</span>
@@ -413,31 +413,23 @@
     </div>
 
     <div class="post-copyright">
-  <p class="copyright-item">
-    <span class="item-title">文章作者</span>
-    <span class="item-content">沐桢</span>
-  </p>
-  <p class="copyright-item">
-    <span class="item-title">上次更新</span>
-    <span class="item-content">
-        2023-04-02
-        <a href="/commit/1bb8345645932d18fce5da3057660bbaf5b85649" title="feat: 更新blog">(1bb8345)</a>
-    </span>
-  </p>
-  
-  <p class="copyright-item">
-    <span class="item-title">许可协议</span>
-    <span class="item-content">MIT</span>
-  </p>
-</div>
-<footer class="post-footer">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    <p class="copyright-item">
+        <span class="item-title">许可协议</span>
+        <span class="item-content">MIT</span>
+    </p>
+</div><footer class="post-footer">
       <div class="post-tags">
           <a href="/tags/vue/">vue</a>
           </div>
       <nav class="post-nav">
-        <a class="prev" href="/post/py%E6%95%B0%E6%8D%AE%E5%BA%93%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/">
+        <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">Py数据库版本控制</span>
+            <span class="prev-text nav-default">手写vue3-01实现effect和reactive</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/">
@@ -454,7 +446,7 @@
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2022-12-06 20:58:23 \u002b0800 CST',
+        id: '2022-02-06 20:58:23 \u002b0800 CST',
         title: 'Vue的组件间通信',
         clientID: 'Ov23liIOS4xVWBCr8CiQ',
         clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',

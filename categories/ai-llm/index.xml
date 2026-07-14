@@ -6,7 +6,34 @@
     <description>Recent content in AI-LLM on 林川在Coding</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-Hans</language>
-    <lastBuildDate>Fri, 10 May 2024 23:59:00 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/categories/ai-llm/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 29 Jul 2024 22:10:00 +0800</lastBuildDate><atom:link href="http://wushao666.github.io/categories/ai-llm/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RAG设计之评估系统</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%AF%84%E4%BC%B0%E7%B3%BB%E7%BB%9F/</link>
+      <pubDate>Mon, 29 Jul 2024 22:10:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%AF%84%E4%BC%B0%E7%B3%BB%E7%BB%9F/</guid>
+      <description>没有测试数据的性能优化就是放屁。靠脑补做的优化99%都是无效的。</description>
+    </item>
+    
+    <item>
+      <title>RAG设计之分词器架构实现</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Mon, 15 Jul 2024 00:33:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RAG设计之PDF分层架构</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/</link>
+      <pubDate>Sun, 30 Jun 2024 00:21:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>RAG设计之PDF解析器优化</title>
       <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E8%A7%A3%E6%9E%90%E5%99%A8%E8%AE%BE%E8%AE%A1/</link>
@@ -20,16 +47,16 @@
     <item>
       <title>RAG设计之Chunk处理</title>
       <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</link>
-      <pubDate>Thu, 28 Mar 2024 22:56:00 +0800</pubDate>
+      <pubDate>Thu, 18 Apr 2024 00:26:00 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>RAG设计之分词器</title>
+      <title>RAG设计之分词器优化</title>
       <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</link>
-      <pubDate>Mon, 18 Mar 2024 23:51:40 +0800</pubDate>
+      <pubDate>Thu, 28 Mar 2024 23:51:40 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</guid>
       <description>&lt;p&gt;本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝&lt;/p&gt;</description>

@@ -17,12 +17,12 @@
     </item>
     
     <item>
-      <title>AIAgent工作经历复盘</title>
-      <link>http://wushao666.github.io/post/aiagent%E5%B7%A5%E4%BD%9C%E7%BB%8F%E5%8E%86%E5%A4%8D%E7%9B%98/</link>
-      <pubDate>Tue, 13 Jan 2026 21:16:26 +0800</pubDate>
+      <title>多Agent编排之手写调度器</title>
+      <link>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/</link>
+      <pubDate>Thu, 08 Jan 2026 23:56:26 +0800</pubDate>
       
-      <guid>http://wushao666.github.io/post/aiagent%E5%B7%A5%E4%BD%9C%E7%BB%8F%E5%8E%86%E5%A4%8D%E7%9B%98/</guid>
-      <description>这个系列文章主要是复盘、总结、重新审视我在AIAgent领域的工作经历，从在完美世界做的游戏内个性化 NPC，以及鹅厂不算完美的代码生成平台，</description>
+      <guid>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/</guid>
+      <description>&lt;p&gt;众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -41,6 +41,33 @@
       
       <guid>http://wushao666.github.io/post/bff%E5%B1%82%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/</guid>
       <description>这个系列是基于在鹅厂的工程实践，抽象出来的MVP版本实践。 本文就是为了BFF层设计的前端基建内容，在做前端基建之前，还是要再次复习一下我们之</description>
+    </item>
+    
+    <item>
+      <title>RAG设计之评估系统</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%AF%84%E4%BC%B0%E7%B3%BB%E7%BB%9F/</link>
+      <pubDate>Mon, 29 Jul 2024 22:10:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E8%AF%84%E4%BC%B0%E7%B3%BB%E7%BB%9F/</guid>
+      <description>没有测试数据的性能优化就是放屁。靠脑补做的优化99%都是无效的。</description>
+    </item>
+    
+    <item>
+      <title>RAG设计之分词器架构实现</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Mon, 15 Jul 2024 00:33:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RAG设计之PDF分层架构</title>
+      <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/</link>
+      <pubDate>Sun, 30 Jun 2024 00:21:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bpdf%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/</guid>
+      <description></description>
     </item>
     
     <item>
@@ -65,16 +92,16 @@
     <item>
       <title>RAG设计之Chunk处理</title>
       <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</link>
-      <pubDate>Thu, 28 Mar 2024 22:56:00 +0800</pubDate>
+      <pubDate>Thu, 18 Apr 2024 00:26:00 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8Bchunk%E5%A4%84%E7%90%86/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>RAG设计之分词器</title>
+      <title>RAG设计之分词器优化</title>
       <link>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</link>
-      <pubDate>Mon, 18 Mar 2024 23:51:40 +0800</pubDate>
+      <pubDate>Thu, 28 Mar 2024 23:51:40 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/rag%E8%AE%BE%E8%AE%A1%E4%B9%8B%E5%88%86%E8%AF%8D%E5%99%A8/</guid>
       <description>&lt;p&gt;本文的主题是“分词器”，乍一看是不是感觉很陌生，其实我如果不做 RAG系统开发，我也是懵逼🙂‍↕️，幸好经过调试、开发了我们游戏内的自定义分词器后，现在熟了一些，本文涉及的项目内容、架构实现，都已经经过精简、脱敏处理，仅做📝&lt;/p&gt;</description>
@@ -108,87 +135,6 @@
     </item>
     
     <item>
-      <title>Vue的组件间通信</title>
-      <link>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</link>
-      <pubDate>Tue, 06 Dec 2022 20:58:23 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</guid>
-      <description>在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法</description>
-    </item>
-    
-    <item>
-      <title>Javascript中的异步问题</title>
-      <link>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</link>
-      <pubDate>Wed, 16 Nov 2022 18:51:22 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</guid>
-      <description>最近给一些同学讲js的异步问题，总结一下。 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我去执行其他逻辑，当函</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-07实现computed</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</link>
-      <pubDate>Mon, 10 Oct 2022 20:03:54 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</guid>
-      <description>实现computed 本节实现computed()，先看测试用例： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-06实现ref、isRef、unRef、proxyRefs</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</link>
-      <pubDate>Mon, 10 Oct 2022 14:31:28 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</guid>
-      <description>实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-05实现shallowReactive和isProxy</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/</link>
-      <pubDate>Mon, 10 Oct 2022 10:07:06 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/</guid>
-      <description>实现shallowReactive shallowReadonly 照旧，我们先来看看测试用例，要做什么： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 // shallowReactive.spec.ts</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</link>
-      <pubDate>Sun, 09 Oct 2022 17:24:00 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</guid>
-      <description>实现isReadonly和isReactive 这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例： 1 2 3 4 5 6 7 // reactive.spec.ts</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-03实现readonly并重构响应式模块</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</link>
-      <pubDate>Sun, 09 Oct 2022 14:59:45 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</guid>
-      <description>重构reactive 本来我们应该直接实现readonly模块的，但是其实它本质上和reactive很像，只不过它是只读的，不能set，set</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-02实现effect的runner-scheduler-stop功能</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</link>
-      <pubDate>Sun, 09 Oct 2022 11:58:26 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</guid>
-      <description>实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用</description>
-    </item>
-    
-    <item>
-      <title>手写miniVue3-01实现effect和reactive</title>
-      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</link>
-      <pubDate>Sat, 08 Oct 2022 22:27:32 +0800</pubDate>
-      
-      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</guid>
-      <description>mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip</description>
-    </item>
-    
-    <item>
       <title>Http缓存机制</title>
       <link>http://wushao666.github.io/post/http%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6/</link>
       <pubDate>Tue, 27 Sep 2022 15:12:54 +0800</pubDate>
@@ -200,7 +146,7 @@
     <item>
       <title>手写goweb框架02-路由实现</title>
       <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B602-%E8%B7%AF%E7%94%B1%E5%AE%9E%E7%8E%B0/</link>
-      <pubDate>Fri, 16 Sep 2022 16:58:00 +0800</pubDate>
+      <pubDate>Sat, 24 Sep 2022 16:58:00 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99goweb%E6%A1%86%E6%9E%B602-%E8%B7%AF%E7%94%B1%E5%AE%9E%E7%8E%B0/</guid>
       <description>本节我们来实现框架的基础路由部分，我们会按照5步循序渐进的实现这个路由。 go原生实现基础路由 go的http包很强大，可以直接实现基础路由做测</description>
@@ -216,12 +162,93 @@
     </item>
     
     <item>
+      <title>手写vue3-07实现computed</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</link>
+      <pubDate>Thu, 30 Jun 2022 20:03:54 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/</guid>
+      <description>computed是vue3中一个非常重要的api，它允许我们定义一个计算属性，这个属性会根据依赖的响应式数据自动更新。 实现computed 本</description>
+    </item>
+    
+    <item>
       <title>云服务器搭建</title>
       <link>http://wushao666.github.io/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/</link>
       <pubDate>Sun, 08 May 2022 22:42:02 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/</guid>
       <description>购买云服务器 阿里云或者腾讯云都可，腾讯云便宜些。云服务器会提供一个公网IP，给域名解析用，镜像可能是centos或者Ubuntu，本文以ce</description>
+    </item>
+    
+    <item>
+      <title>手写vue3-06实现ref、isRef、unRef、proxyRefs</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</link>
+      <pubDate>Mon, 18 Apr 2022 14:31:28 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/</guid>
+      <description>本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue3开发中我</description>
+    </item>
+    
+    <item>
+      <title>手写vue3-05实现shallowReactive和isProxy</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/</link>
+      <pubDate>Sun, 10 Apr 2022 10:07:06 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/</guid>
+      <description>想象两个场景： 当后端返回上万条数据的表格、复杂树形结构，这种大数据源，如果你用 reactive 做proxy，性能开销巨大 全局常量配置、基础数据源，应该保护</description>
+    </item>
+    
+    <item>
+      <title>手写miniVue3-04实现isReadonly和isReactive</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</link>
+      <pubDate>Thu, 31 Mar 2022 17:24:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/</guid>
+      <description>这两个属于响应式的工具类，判断是属于哪种类型的响应式对象. isReactive(target): 判断对象是否由 reactive() 创建的响应式代理 isReadonly(target): 判断对象是否由 readonly() 创建的响应式代理 实现isRea</description>
+    </item>
+    
+    <item>
+      <title>手写vue3-03实现readonly并重构响应式模块</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</link>
+      <pubDate>Tue, 29 Mar 2022 14:59:45 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/</guid>
+      <description>重构reactive 本来我们应该直接实现readonly模块的，但是其实它本质上和reactive很像，只不过它是只读的，不能set，set</description>
+    </item>
+    
+    <item>
+      <title>手写vue3-02实现runner-scheduler-stop功能</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</link>
+      <pubDate>Tue, 15 Mar 2022 11:58:26 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/</guid>
+      <description>实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用</description>
+    </item>
+    
+    <item>
+      <title>手写vue3-01实现effect和reactive</title>
+      <link>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</link>
+      <pubDate>Tue, 08 Mar 2022 22:27:32 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/</guid>
+      <description>mini-vue初始化 本系列将会实现一个mini 😊的vue3框架，但是在开始写代码之前需要做一些准备工作，安装相关依赖 安装typescrip</description>
+    </item>
+    
+    <item>
+      <title>Vue的组件间通信</title>
+      <link>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</link>
+      <pubDate>Sun, 06 Feb 2022 20:58:23 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/vue%E7%9A%84%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1/</guid>
+      <description>在 vue 的组件化开发的过程中，数据交互是其中很重要的环节，不同的组件间如何进行通信就是今天要探讨的话题。所谓的通信就是组件之间获取属性和调用方法</description>
+    </item>
+    
+    <item>
+      <title>Javascript中的异步问题</title>
+      <link>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</link>
+      <pubDate>Sat, 01 Jan 2022 18:51:22 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/javascript%E4%B8%AD%E7%9A%84%E5%BC%82%E6%AD%A5%E9%97%AE%E9%A2%98/</guid>
+      <description>最近给一些同学讲js的异步问题，发现有些小伙伴们还是有偏差呀。 JavaScript 中的&amp;quot;异步&amp;quot;，所谓的异步就是我不立刻等函数执行的结果，我</description>
     </item>
     
     <item>

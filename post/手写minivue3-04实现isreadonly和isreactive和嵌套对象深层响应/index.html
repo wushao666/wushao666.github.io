@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应 - 林川在Coding</title>
+  <title>手写miniVue3-04实现isReadonly和isReactive - 林川在Coding</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="沐桢" /><meta name="description" content="实现isReadonly和isReactive 这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例： 1 2 3 4 5 6 7 // reactive.spec.ts" />
+<meta name="author" content="沐桢" /><meta name="description" content="这两个属于响应式的工具类，判断是属于哪种类型的响应式对象. isReactive(target): 判断对象是否由 reactive() 创建的响应式代理 isReadonly(target): 判断对象是否由 readonly() 创建的响应式代理 实现isRea" />
 
 
 
@@ -39,20 +39,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应" />
-<meta property="og:description" content="实现isReadonly和isReactive 这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例： 1 2 3 4 5 6 7 // reactive.spec.ts" />
+<meta property="og:title" content="手写miniVue3-04实现isReadonly和isReactive" />
+<meta property="og:description" content="这两个属于响应式的工具类，判断是属于哪种类型的响应式对象. isReactive(target): 判断对象是否由 reactive() 创建的响应式代理 isReadonly(target): 判断对象是否由 readonly() 创建的响应式代理 实现isRea" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-04%E5%AE%9E%E7%8E%B0isreadonly%E5%92%8Cisreactive%E5%92%8C%E5%B5%8C%E5%A5%97%E5%AF%B9%E8%B1%A1%E6%B7%B1%E5%B1%82%E5%93%8D%E5%BA%94/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2022-10-09T17:24:00+08:00" />
+<meta property="article:published_time" content="2022-03-31T17:24:00+08:00" />
 <meta property="article:modified_time" content="2022-10-09T23:07:10+08:00" />
 
-<meta itemprop="name" content="手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应">
-<meta itemprop="description" content="实现isReadonly和isReactive 这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例： 1 2 3 4 5 6 7 // reactive.spec.ts"><meta itemprop="datePublished" content="2022-10-09T17:24:00+08:00" />
+<meta itemprop="name" content="手写miniVue3-04实现isReadonly和isReactive">
+<meta itemprop="description" content="这两个属于响应式的工具类，判断是属于哪种类型的响应式对象. isReactive(target): 判断对象是否由 reactive() 创建的响应式代理 isReadonly(target): 判断对象是否由 readonly() 创建的响应式代理 实现isRea"><meta itemprop="datePublished" content="2022-03-31T17:24:00+08:00" />
 <meta itemprop="dateModified" content="2022-10-09T23:07:10+08:00" />
-<meta itemprop="wordCount" content="2360">
+<meta itemprop="wordCount" content="2394">
 <meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应"/>
-<meta name="twitter:description" content="实现isReadonly和isReactive 这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例： 1 2 3 4 5 6 7 // reactive.spec.ts"/>
+<meta name="twitter:title" content="手写miniVue3-04实现isReadonly和isReactive"/>
+<meta name="twitter:description" content="这两个属于响应式的工具类，判断是属于哪种类型的响应式对象. isReactive(target): 判断对象是否由 reactive() 创建的响应式代理 isReadonly(target): 判断对象是否由 readonly() 创建的响应式代理 实现isRea"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -129,14 +129,14 @@
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应</h1>
+      <h1 class="post-title">手写miniVue3-04实现isReadonly和isReactive</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2022-10-09 </span>
+        <span class="post-time"> 2022年03月31日 17:24 </span>
         <div class="post-category">
             <a href="/categories/vue/"> vue </a>
             </div>
-          <span class="more-meta"> 约 2360 字 </span>
+          <span class="more-meta"> 约 2394 字 </span>
           <span class="more-meta"> 预计阅读 5 分钟 </span>
         
       </div>
@@ -159,8 +159,14 @@
   </div>
 </div>
     <div class="post-content">
-      <h2 id="实现isreadonly和isreactive">实现<code>isReadonly</code>和<code>isReactive</code></h2>
-<p>这两个属于响应式的工具类，判断是属于哪种类型的响应式对象，照旧先看测试用例：</p>
+      <p>这两个属于响应式的工具类，判断是属于哪种类型的响应式对象.</p>
+<ul>
+<li>isReactive(target): 判断对象是否由 reactive() 创建的响应式代理</li>
+<li>isReadonly(target): 判断对象是否由 readonly() 创建的响应式代理</li>
+</ul>
+<!-- more -->
+<h2 id="实现isreadonly和isreactive">实现<code>isReadonly</code>和<code>isReactive</code></h2>
+<p>照旧先看测试用例：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -792,35 +798,27 @@
     </div>
 
     <div class="post-copyright">
-  <p class="copyright-item">
-    <span class="item-title">文章作者</span>
-    <span class="item-content">沐桢</span>
-  </p>
-  <p class="copyright-item">
-    <span class="item-title">上次更新</span>
-    <span class="item-content">
-        2022-10-09
-        <a href="/commit/140ce16c76e3768d8b9f1aff8d1db81b7d981cda" title="What:">(140ce16)</a>
-    </span>
-  </p>
-  
-  <p class="copyright-item">
-    <span class="item-title">许可协议</span>
-    <span class="item-content">MIT</span>
-  </p>
-</div>
-<footer class="post-footer">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    <p class="copyright-item">
+        <span class="item-title">许可协议</span>
+        <span class="item-content">MIT</span>
+    </p>
+</div><footer class="post-footer">
       <div class="post-tags">
           <a href="/tags/vue3/">vue3</a>
           </div>
       <nav class="post-nav">
         <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">手写miniVue3-05实现shallowReactive和isProxy</span>
+            <span class="prev-text nav-default">手写vue3-05实现shallowReactive和isProxy</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/">
-            <span class="next-text nav-default">手写miniVue3-03实现readonly并重构响应式模块</span>
+            <span class="next-text nav-default">手写vue3-03实现readonly并重构响应式模块</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
@@ -833,8 +831,8 @@
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2022-10-09 17:24:00 \u002b0800 CST',
-        title: '手写miniVue3-04实现isReadonly和isReactive和嵌套对象深层响应',
+        id: '2022-03-31 17:24:00 \u002b0800 CST',
+        title: '手写miniVue3-04实现isReadonly和isReactive',
         clientID: 'Ov23liIOS4xVWBCr8CiQ',
         clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
         repo: 'hugo-blog-comments',

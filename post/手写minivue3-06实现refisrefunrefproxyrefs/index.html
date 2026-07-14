@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>手写miniVue3-06实现ref、isRef、unRef、proxyRefs - 林川在Coding</title>
+  <title>手写vue3-06实现ref、isRef、unRef、proxyRefs - 林川在Coding</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="沐桢" /><meta name="description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue" />
+<meta name="author" content="沐桢" /><meta name="description" content="本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue3开发中我" />
 
 
 
@@ -39,20 +39,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="手写miniVue3-06实现ref、isRef、unRef、proxyRefs" />
-<meta property="og:description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue" />
+<meta property="og:title" content="手写vue3-06实现ref、isRef、unRef、proxyRefs" />
+<meta property="og:description" content="本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue3开发中我" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-06%E5%AE%9E%E7%8E%B0refisrefunrefproxyrefs/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2022-10-10T14:31:28+08:00" />
+<meta property="article:published_time" content="2022-04-18T14:31:28+08:00" />
 <meta property="article:modified_time" content="2023-04-02T13:03:52+08:00" />
 
-<meta itemprop="name" content="手写miniVue3-06实现ref、isRef、unRef、proxyRefs">
-<meta itemprop="description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue"><meta itemprop="datePublished" content="2022-10-10T14:31:28+08:00" />
+<meta itemprop="name" content="手写vue3-06实现ref、isRef、unRef、proxyRefs">
+<meta itemprop="description" content="本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue3开发中我"><meta itemprop="datePublished" content="2022-04-18T14:31:28+08:00" />
 <meta itemprop="dateModified" content="2023-04-02T13:03:52+08:00" />
 <meta itemprop="wordCount" content="3121">
 <meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="手写miniVue3-06实现ref、isRef、unRef、proxyRefs"/>
-<meta name="twitter:description" content="实现ref 本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue"/>
+<meta name="twitter:title" content="手写vue3-06实现ref、isRef、unRef、proxyRefs"/>
+<meta name="twitter:description" content="本节我们要实现一个超级重要的响应式操作-ref()，它是比响应式核心中的reactive()使用的更为频繁的一个操作，真正的vue3开发中我"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -129,10 +129,10 @@
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">手写miniVue3-06实现ref、isRef、unRef、proxyRefs</h1>
+      <h1 class="post-title">手写vue3-06实现ref、isRef、unRef、proxyRefs</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2022-10-10 </span>
+        <span class="post-time"> 2022年04月18日 14:31 </span>
         <div class="post-category">
             <a href="/categories/vue/"> vue </a>
             </div>
@@ -168,14 +168,14 @@
   </div>
 </div>
     <div class="post-content">
-      <h2 id="实现ref">实现<code>ref</code></h2>
-<p>本节我们要实现一个超级重要的响应式操作-<code>ref()</code>，它是比响应式核心中的<code>reactive()</code>使用的更为频繁的一个操作，真正的<code>vue3开发</code>中我们也是会经常看到<code>ref</code>的身影，主要是因为<code>reactive()</code>有一定的<a href="https://cn.vuejs.org/guide/essentials/reactivity-fundamentals.html#limitations-of-reactive">局限性</a>：</p>
+      <p>本节我们要实现一个超级重要的响应式操作-<code>ref()</code>，它是比响应式核心中的<code>reactive()</code>使用的更为频繁的一个操作，真正的<code>vue3开发</code>中我们也是会经常看到<code>ref</code>的身影，主要是因为<code>reactive()</code>有一定的<a href="https://cn.vuejs.org/guide/essentials/reactivity-fundamentals.html#limitations-of-reactive">局限性</a>：</p>
 <blockquote>
 <ol>
 <li>仅对对象类型有效，对于基本类型<code>string boolean number</code>类型无效</li>
 <li>因为<code>vue3响应式系统</code>需要通过属性访问进行追踪，因此我们必须始终保持对该响应式对象的相同引用。这意味着我们不可以随意地“替换”一个响应式对象，因为这将导致对初始引用的响应性连接丢失：</li>
 </ol>
 </blockquote>
+<h2 id="实现ref">实现<code>ref</code></h2>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1054,35 +1054,27 @@
     </div>
 
     <div class="post-copyright">
-  <p class="copyright-item">
-    <span class="item-title">文章作者</span>
-    <span class="item-content">沐桢</span>
-  </p>
-  <p class="copyright-item">
-    <span class="item-title">上次更新</span>
-    <span class="item-content">
-        2023-04-02
-        <a href="/commit/1bb8345645932d18fce5da3057660bbaf5b85649" title="feat: 更新blog">(1bb8345)</a>
-    </span>
-  </p>
-  
-  <p class="copyright-item">
-    <span class="item-title">许可协议</span>
-    <span class="item-content">MIT</span>
-  </p>
-</div>
-<footer class="post-footer">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    <p class="copyright-item">
+        <span class="item-title">许可协议</span>
+        <span class="item-content">MIT</span>
+    </p>
+</div><footer class="post-footer">
       <div class="post-tags">
           <a href="/tags/vue3/">vue3</a>
           </div>
       <nav class="post-nav">
-        <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-07%E5%AE%9E%E7%8E%B0computed/">
+        <a class="prev" href="/post/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%90%AD%E5%BB%BA/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">手写miniVue3-07实现computed</span>
+            <span class="prev-text nav-default">云服务器搭建</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/%E6%89%8B%E5%86%99minivue3-05%E5%AE%9E%E7%8E%B0shallowreactive%E5%92%8Cisproxy/">
-            <span class="next-text nav-default">手写miniVue3-05实现shallowReactive和isProxy</span>
+            <span class="next-text nav-default">手写vue3-05实现shallowReactive和isProxy</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
@@ -1095,8 +1087,8 @@
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2022-10-10 14:31:28 \u002b0800 CST',
-        title: '手写miniVue3-06实现ref、isRef、unRef、proxyRefs',
+        id: '2022-04-18 14:31:28 \u002b0800 CST',
+        title: '手写vue3-06实现ref、isRef、unRef、proxyRefs',
         clientID: 'Ov23liIOS4xVWBCr8CiQ',
         clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
         repo: 'hugo-blog-comments',

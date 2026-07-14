@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>多Agent编排之手写调度器 - 林川在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="沐桢" /><meta name="description" content="众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="多Agent编排之手写调度器" />
+<meta property="og:description" content="众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2026-01-08T23:56:26+08:00" />
+<meta property="article:modified_time" content="2026-01-08T23:56:26+08:00" />
+
+<meta itemprop="name" content="多Agent编排之手写调度器">
+<meta itemprop="description" content="众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。"><meta itemprop="datePublished" content="2026-01-08T23:56:26+08:00" />
+<meta itemprop="dateModified" content="2026-01-08T23:56:26+08:00" />
+<meta itemprop="wordCount" content="8043">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="多Agent编排之手写调度器"/>
+<meta name="twitter:description" content="众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">林川在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">林川在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">多Agent编排之手写调度器</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2026年01月08日 23:56 </span>
+        
+          <span class="more-meta"> 约 8043 字 </span>
+          <span class="more-meta"> 预计阅读 17 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#1-为什么需要调度器">1. 为什么需要调度器</a>
+          <ul>
+            <li><a href="#11--状态机的图实现">1.1  状态机的图实现</a></li>
+            <li><a href="#12-多agent共享状态">1.2. 多Agent共享状态</a></li>
+            <li><a href="#13-工作流循环执行">1.3. 工作流循环执行</a></li>
+            <li><a href="#14-llm的白屏问题">1.4. LLM的“白屏问题”</a></li>
+            <li><a href="#15控制任务进度">1.5.控制任务进度</a></li>
+          </ul>
+        </li>
+        <li><a href="#2-为什么要自定义">2. 为什么要自定义？</a></li>
+        <li><a href="#3-如何实现">3. 🤔如何实现</a>
+          <ul>
+            <li><a href="#31-共享状态和消息队列">3.1 共享状态和消息队列</a></li>
+            <li><a href="#32-单个-agent-的调度逻辑">3.2 单个 Agent 的调度逻辑</a></li>
+            <li><a href="#33-任务中断取消">3.3 任务中断/取消</a></li>
+            <li><a href="#34-检查点恢复">3.4 检查点/恢复</a></li>
+            <li><a href="#35-工作流的前置阶段">3.5 工作流的前置阶段</a></li>
+            <li><a href="#36-工作流的审核">3.6 工作流的审核</a></li>
+            <li><a href="#37-前后端sse交互时序">3.7 前后端SSE交互时序</a></li>
+          </ul>
+        </li>
+        <li><a href="#4-与-langgraph-版本的差异">4. 与 LangGraph 版本的差异</a></li>
+        <li><a href="#5实际效果">5.实际效果</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。</p>
+<p><img src="/agents/1.png" alt="">
+<img src="/agents/4.png" alt=""></p>
+<h2 id="1-为什么需要调度器">1. 为什么需要调度器</h2>
+<p>在手写之前，我们要先搞清楚：为什么当下多 agent 架构必备 langgraph 这类调度器了？</p>
+<p>有以下 3 个核心原因和 2 个交互优化原因：</p>
+<h3 id="11--状态机的图实现">1.1  状态机的图实现</h3>
+<p>曾经我们可以手写代码或者使用 langchain 实现 单agent 功能，也是写的飞起，但随着任务拆分、解耦不同 agent 的功能，单个 agent 处理的任务越来越小，任务之间的依赖关系越来越复杂，agent 之间的协作也越来越频繁。</p>
+<p>例如我们客户的一个经典 多 Agent 流程是多阶段实现的：
+<code>plan -&gt; research -&gt; analyze -&gt; write -&gt; review -&gt; revise -&gt; review ... -&gt; complete</code></p>
+<p>从而形成一个个工作流，而当下ai 时代，我们这些工程师的核心能力就是<code>抽象业务场景，变成工作流，以任务编排的形式，让 agent 帮我们实现</code></p>
+<p>它不是：<code>用户问题 -&gt; LLM -&gt; 答案</code></p>
+<p>而是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">用户问题
+  -&gt; 规划研究大纲
+  -&gt; 搜索资料
+  -&gt; 数据分析
+  -&gt; 生成图表
+  -&gt; 撰写报告
+  -&gt; 审核报告
+  -&gt; 必要时补充搜索/修订
+  -&gt; 最终报告
+</code></pre></td></tr></table>
+</div>
+</div><p>每个阶段都由不同 Agent 负责：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">ChiefArchitect  规划
+DeepScout       搜索
+DataAnalyst     数据分析
+CodeWizard      图表/代码
+LeadWriter      写报告
+CriticMaster    审核
+</code></pre></td></tr></table>
+</div>
+</div><p>而这就是软件工程中经典的： <code>状态机</code>，我们写代码最开始学习的基础就是这个理念，像 if while 等，都是基础的状态机。</p>
+<p>不过随着代码逻辑的复杂，if 判断容易隐藏具体业务逻辑，所以<code>有向图</code>这个数据结构就排上了用场。</p>
+<p>在当前语境下，agent 的任务状态机，就对应 状态图编排能力，agent不是一次 LLM 调用，也不是简单的线性问答，而是一个多阶段、多 Agent、可循环、可分支、共享状态的研究流程。</p>
+<p>如果没有状态图，流程会很快变成一堆难维护的 if/else + while + state[&ldquo;phase&rdquo;]</p>
+<h3 id="12-多agent共享状态">1.2. 多Agent共享状态</h3>
+<p>项目中拆分的多Agent并不是各干各的，它们要共享：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">query
+outline
+facts
+data_points
+charts
+final_report
+references
+critic_feedback
+quality_score
+iteration
+phase
+</code></pre></td></tr></table>
+</div>
+</div><p>例如：</p>
+<ul>
+<li><code>ChiefArchitect</code> 生成 <code>outline</code></li>
+<li><code>DeepScout</code> 根据 <code>outline</code> 搜索，写入 <code>facts</code></li>
+<li><code>DataAnalyst</code> 基于 <code>facts</code> 提取数据点</li>
+<li><code>CodeWizard</code> 基于数据生成图表</li>
+<li><code>LeadWriter</code> 基于 facts/charts/references 写报告</li>
+<li><code>CriticMaster</code> 审核报告，写入 <code>critic_feedback</code></li>
+</ul>
+<p>所以需要一个统一的 <code>State</code>，在编排过程中流动。<code>状态图编排的价值，就是让“哪个节点读写这个状态、下一步去哪”变得清楚。</code></p>
+<h3 id="13-工作流循环执行">1.3. 工作流循环执行</h3>
+<p>这是最关键的。</p>
+<p>例如在审核阶段可能发现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">资料不够
+引用缺失
+逻辑有问题
+数据过旧
+报告不完整
+</code></pre></td></tr></table>
+</div>
+</div><p>这时不能直接结束，而要回头：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">review -&gt; revise -&gt; review
+</code></pre></td></tr></table>
+</div>
+</div><p>或者更复杂：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">review -&gt; re_researching -&gt; writing -&gt; review
+</code></pre></td></tr></table>
+</div>
+</div><p>这就是 LangGraph 这类状态图工具擅长表达的东西：<strong>节点、边、条件边、循环边</strong>。</p>
+<p>如果传统写法，不用状态图也能写，但会变成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">while</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="n">max_iterations</span><span class="p">:</span>
+    <span class="n">critic</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;phase&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;completed&#34;</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;phase&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;re_researching&#34;</span><span class="p">:</span>
+        <span class="n">scout</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;phase&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;revising&#34;</span><span class="p">:</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>功能一样可以实现，但是<code>任务的流程结构藏在代码细节里；状态图却能把流程显式表达出来</code>。</p>
+<h3 id="14-llm的白屏问题">1.4. LLM的“白屏问题”</h3>
+<p>同时这么多流程在跑，时间很久，<code>用户感知变久，但是无可奈何</code>，我称之为 LLM 时代的“白屏问题”。</p>
+<p>前面我们设计了很多工作流，这些交互需要可解释、可维护！！！</p>
+<p>而且 LLM 时代，客户随着天马行空的想象增多，有可能Agent 很容易变复杂。后续可能加：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">本地知识库检索
+联网搜索
+招投标数据分析
+政策文档分析
+人类审核
+后台批处理
+中断恢复
+不同模型分配
+不同策略切换
+</code></pre></td></tr></table>
+</div>
+</div><p>如果没有状态图，新增一个阶段就要到处改调度代码。</p>
+<p>有状态图后，可以更清楚地描述：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">节点是什么
+输入输出是什么
+成功后去哪
+失败后去哪
+审核不通过去哪
+达到最大轮次去哪
+</code></pre></td></tr></table>
+</div>
+</div><p>这对后续维护很重要，而且研究过程必须做到可视化：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">planning
+researching
+analyzing
+writing
+reviewing
+revising
+</code></pre></td></tr></table>
+</div>
+</div><p>状态图天然可以映射成前端时间线、流程图、日志和检查点。</p>
+<p>比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">当前执行到哪个节点？
+为什么从 review 回到了 revise？
+为什么进入 re_researching？
+哪一轮审核通过了？
+</code></pre></td></tr></table>
+</div>
+</div><p>这些问题，用状态图表达会比散落的函数调用更容易解释。</p>
+<h3 id="15控制任务进度">1.5.控制任务进度</h3>
+<p>这么多阶段的研究流程，用户可能中途暂停，或者网络断开，或者服务器重启，需要暂停/恢复/继续。</p>
+<p>如何做到真正可靠的恢复，需要知道：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">当前 phase 是什么
+上一个完成节点是什么
+下一个应该执行哪个节点
+当前 iteration 是第几轮
+哪些状态已经生成
+哪些节点不能重复跑
+</code></pre></td></tr></table>
+</div>
+</div><p>这些本质上也是状态机问题。</p>
+<p>所以状态图编排能力能为后续做：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">暂停
+恢复
+重试
+跳过
+回滚
+人工介入
+</code></pre></td></tr></table>
+</div>
+</div><p>打基础。</p>
+<h2 id="2-为什么要自定义">2. 为什么要自定义？</h2>
+<p>既然已经有了现成的调度器，为什么还要自己实现调度器呢？</p>
+<p>因为langgraph 的状态图解决了“流程结构、共享状态、任务控制”：
+可能你会想到通过类似<code>_build_langgraph()</code> 的逻辑构建：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">StateGraph(ResearchState)
+  add_node(&#34;plan&#34;, _plan_node)
+  add_node(&#34;research&#34;, _research_node)
+  add_node(&#34;analyze&#34;, _analyze_node)
+  add_node(&#34;write&#34;, _write_node)
+  add_node(&#34;review&#34;, _review_node)
+  add_node(&#34;revise&#34;, _revise_node)
+  add_conditional_edges(&#34;review&#34;, _should_revise, {&#34;revise&#34;: &#34;revise&#34;, &#34;complete&#34;: END})
+  add_edge(&#34;revise&#34;, &#34;review&#34;)
+</code></pre></td></tr></table>
+</div>
+</div><p>这个图能表达审核后修订再回到审核的循环。但客户要的不是“节点结束后拿到一次状态”，而是：</p>
+<ul>
+<li>搜索过程中实时返回搜索进度、来源和事实。</li>
+<li>分析过程中实时返回数据点、知识图谱和图表。</li>
+<li>写作过程中实时返回阶段状态和报告片段。</li>
+<li>用户点击取消后，当前 Agent 尽快停止。</li>
+<li>每个阶段结束后保存检查点，并同步前端恢复所需 UI 状态。</li>
+</ul>
+<p>客户需要看到每个阶段的进度，让他们知道系统还在分析中，而不是“白屏”等待⌛️。</p>
+<p>而使用<code>_run_with_langgraph()</code> 当前只能在 <code>self.graph.astream(state)</code> 产出节点状态时，从 <code>node_state[&quot;messages&quot;]</code> 里取新增消息。对于长耗时 Agent，这会让用户感受白屏延迟。</p>
+<p>所以我设计的编排的架构是：</p>
+<ul>
+<li>LangGraph / 状态图：表达工作流骨架，作为兼容逻辑</li>
+<li>自定义调度器：负责实时 SSE、取消、检查点、UI 状态同步，在 Agent 任务还没结束时就持续读队列并 <code>yield</code></li>
+</ul>
+<h2 id="3-如何实现">3. 🤔如何实现</h2>
+<p>架构上参考 langgraph 实现，首先就是要用<code>while</code>、<code>if/else</code>、共享 <code>state</code> 实现“回头循环调用”。</p>
+<p>这里技术上有所取舍：</p>
+<ul>
+<li>选取了业务上客户希望的节点实时输出，每个 Agent 执行过程中要不断从 <code>asyncio.Queue</code> 推消息，而不是LangGraph 的“一个节点执行完才会进入下一个节点”</li>
+<li>舍弃了图编排的简洁抽象，使用 <code>while+yield+agent流式抽象+枚举状态</code> 模拟任务调度，每个节点执行完后，再进入下一个节点</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">while</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;iteration&#34;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;max_iterations&#34;</span><span class="p">]:</span>
+    <span class="o">...</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">run_agent_with_streaming</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">msg</span>
+
+    <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;phase&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ResearchPhase</span><span class="o">.</span><span class="n">RE_RESEARCHING</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">run_agent_with_streaming</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scout</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">msg</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&#34;phase&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ResearchPhase</span><span class="o">.</span><span class="n">WRITING</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">run_agent_with_streaming</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">msg</span>
+
+    <span class="k">elif</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;phase&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ResearchPhase</span><span class="o">.</span><span class="n">REVISING</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">run_agent_with_streaming</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">msg</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>宏观来看架构的话：
+<pre class="mermaid">
+  
+flowchart TB
+  UI[&#34;Frontend&#34;] --&gt; Router[&#34;ResearchRouter.stream_research&#34;]
+  Router --&gt; Response[&#34;StreamingResponse&#34;]
+  Response --&gt; Service[&#34;DeepResearchV2Service.research&#34;]
+  Service --&gt; GraphRun[&#34;DeepResearchGraph.run&#34;]
+  GraphRun --&gt; Scheduler[&#34;_run_simplified(state)&#34;]
+
+  Scheduler --&gt; State[&#34;ResearchState\n全局工作记忆&#34;]
+  Scheduler --&gt; Queue[&#34;asyncio.Queue\nstate[&#39;_message_queue&#39;]&#34;]
+  Scheduler --&gt; Checkpoint[&#34;checkpoint_service\n保存后端状态和 UI 状态&#34;]
+  Scheduler --&gt; Cancel[&#34;Redis cancel flag\nis_research_cancelled&#34;]
+
+  Scheduler --&gt; Agents[&#34;ChiefArchitect / DeepScout / DataAnalyst\nCodeWizard / LeadWriter / CriticMaster&#34;]
+  Agents --&gt; AddMessage[&#34;BaseAgent.add_message&#34;]
+  AddMessage --&gt; StateMessages[&#34;state[&#39;messages&#39;]&#34;]
+  AddMessage --&gt; Queue
+
+  Queue --&gt; Scheduler
+  Scheduler --&gt; Service
+  Service --&gt; Response
+  Response --&gt; UI
+
+</pre>
+</p>
+<p>核心调用链是：
+核心调用链如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">ResearchRouter.stream_research
+  -&gt; DeepResearchV2Service.research
+    -&gt; DeepResearchGraph.run
+      -&gt; _run_simplified
+        -&gt; run_agent_with_streaming
+          -&gt; asyncio.create_task(agent.process(state))
+          -&gt; BaseAgent.add_message
+          -&gt; asyncio.Queue
+    -&gt; DeepResearchV2Service._format_sse
+  -&gt; StreamingResponse
+</code></pre></td></tr></table>
+</div>
+</div><p>没有 LangGraph 时，项目靠 自定义调度器 + 共享 ResearchState + asyncio.Queue + Redis 取消标记 + 数据库检查点 来实现这些能力。</p>
+<p>接下来重点解释几个关键点的实现：</p>
+<h3 id="31-共享状态和消息队列">3.1 共享状态和消息队列</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 主函数</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_run_simplified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">ResearchState</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这里的<code>ResearchState</code> 是所有 Agent 共享的全局工作记忆，保存用户问题、会话、当前阶段、迭代次数、大纲、事实库、数据点、图表、报告、参考文献、审核反馈、质量分和运行消息，以下代码只记录数据结构定义，不涉及业务代码传播🤐：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">ResearchState</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    LangGraph 状态定义
+</span><span class="s2">
+</span><span class="s2">    这是整个研究过程的全局状态，所有Agent都在读写这个状态。
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="c1"># 基础信息</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>                              <span class="c1"># 用户原始问题</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>                         <span class="c1"># 会话ID</span>
+    <span class="n">phase</span><span class="p">:</span> <span class="nb">str</span>                              <span class="c1"># 当前阶段</span>
+    <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span>                          <span class="c1"># 当前迭代轮次</span>
+    <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># 最大迭代次数</span>
+
+    <span class="c1"># 搜索模式配置</span>
+    <span class="n">search_web</span><span class="p">:</span> <span class="nb">bool</span>                        <span class="c1"># 是否启用网络搜索</span>
+    <span class="n">search_local</span><span class="p">:</span> <span class="nb">bool</span>                      <span class="c1"># 是否启用本地知识库搜索</span>
+
+    <span class="c1"># 规划输出</span>
+    <span class="n">outline</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>           <span class="c1"># 动态大纲 (Section序列化)</span>
+    <span class="n">mind_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>                <span class="c1"># 知识图谱/思维导图</span>
+    <span class="n">key_entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                 <span class="c1"># 关键实体</span>
+    <span class="n">research_questions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>           <span class="c1"># 待研究的子问题</span>
+    <span class="n">hypotheses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>        <span class="c1"># 研究假设（假设驱动研究）</span>
+    <span class="n">knowledge_graph</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>         <span class="c1"># 知识图谱 {nodes: [], edges: []}</span>
+
+    <span class="c1"># 知识库</span>
+    <span class="n">facts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>             <span class="c1"># 结构化事实库</span>
+    <span class="n">data_points</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>       <span class="c1"># 数据点</span>
+    <span class="n">raw_sources</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>       <span class="c1"># 原始来源（网页内容）</span>
+
+    <span class="c1"># 分析输出</span>
+    <span class="n">charts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>            <span class="c1"># 生成的图表</span>
+    <span class="n">code_executions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>   <span class="c1"># 代码执行记录</span>
+    <span class="n">insights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                     <span class="c1"># 数据洞察</span>
+
+    <span class="c1"># 写作输出</span>
+    <span class="n">draft_sections</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>          <span class="c1"># 章节草稿 {section_id: content}</span>
+    <span class="n">final_report</span><span class="p">:</span> <span class="nb">str</span>                       <span class="c1"># 最终报告</span>
+    <span class="n">references</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>        <span class="c1"># 参考文献</span>
+
+    <span class="c1"># 审核反馈</span>
+    <span class="n">critic_feedback</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>   <span class="c1"># 评论家反馈</span>
+    <span class="n">unresolved_issues</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># 未解决问题数</span>
+    <span class="n">quality_score</span><span class="p">:</span> <span class="nb">float</span>                    <span class="c1"># 质量评分</span>
+    <span class="n">pending_search_queries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># 待执行的补充搜索查询（审核后需要补充的）</span>
+
+    <span class="c1"># 元数据</span>
+    <span class="n">logs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>              <span class="c1"># 执行日志</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                       <span class="c1"># 错误记录</span>
+    <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>          <span class="c1"># Agent间消息（用于流式输出）</span>
+
+
+<span class="k">def</span> <span class="nf">create_initial_state</span><span class="p">(</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">search_web</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">search_local</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResearchState</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;创建初始状态
+</span><span class="s2">
+</span><span class="s2">    Args:
+</span><span class="s2">        query: 用户查询
+</span><span class="s2">        session_id: 会话ID
+</span><span class="s2">        search_web: 是否启用网络搜索（默认True）
+</span><span class="s2">        search_local: 是否启用本地知识库搜索（默认False）
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">section_to_dict</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Section</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="s2">&#34;&#34;&#34;Section 序列化&#34;&#34;&#34;</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">fact_to_dict</span><span class="p">(</span><span class="n">fact</span><span class="p">:</span> <span class="n">Fact</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="s2">&#34;&#34;&#34;Fact 序列化&#34;&#34;&#34;</span>
+    <span class="o">...</span>
+
+<span class="k">class</span> <span class="nc">ResearchPhase</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;研究阶段状态机&#34;&#34;&#34;</span>
+    <span class="n">INIT</span> <span class="o">=</span> <span class="s2">&#34;init&#34;</span>                    <span class="c1"># 初始化</span>
+    <span class="n">PLANNING</span> <span class="o">=</span> <span class="s2">&#34;planning&#34;</span>            <span class="c1"># 规划阶段</span>
+    <span class="n">RESEARCHING</span> <span class="o">=</span> <span class="s2">&#34;researching&#34;</span>      <span class="c1"># 深度探索阶段</span>
+    <span class="n">ANALYZING</span> <span class="o">=</span> <span class="s2">&#34;analyzing&#34;</span>          <span class="c1"># 数据分析阶段</span>
+    <span class="n">WRITING</span> <span class="o">=</span> <span class="s2">&#34;writing&#34;</span>              <span class="c1"># 撰写阶段</span>
+    <span class="n">REVIEWING</span> <span class="o">=</span> <span class="s2">&#34;reviewing&#34;</span>          <span class="c1"># 对抗审核阶段</span>
+    <span class="n">RE_RESEARCHING</span> <span class="o">=</span> <span class="s2">&#34;re_researching&#34;</span>  <span class="c1"># 补充搜索阶段（审核发现缺失信息后）</span>
+    <span class="n">REVISING</span> <span class="o">=</span> <span class="s2">&#34;revising&#34;</span>            <span class="c1"># 修订阶段（仅文字修改）</span>
+    <span class="n">COMPLETED</span> <span class="o">=</span> <span class="s2">&#34;completed&#34;</span>          <span class="c1"># 完成</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Section</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;报告章节&#34;&#34;&#34;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">section_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;qualitative&#34;</span><span class="p">,</span> <span class="s2">&#34;quantitative&#34;</span><span class="p">,</span> <span class="s2">&#34;mixed&#34;</span><span class="p">]</span>  <span class="c1"># 定性/定量/混合</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;pending&#34;</span><span class="p">,</span> <span class="s2">&#34;researching&#34;</span><span class="p">,</span> <span class="s2">&#34;drafted&#34;</span><span class="p">,</span> <span class="s2">&#34;reviewed&#34;</span><span class="p">,</span> <span class="s2">&#34;final&#34;</span><span class="p">]</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">subsections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;Section&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">requires_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">requires_chart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Fact</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;结构化事实&#34;&#34;&#34;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_url</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">source_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;official&#34;</span><span class="p">,</span> <span class="s2">&#34;academic&#34;</span><span class="p">,</span> <span class="s2">&#34;news&#34;</span><span class="p">,</span> <span class="s2">&#34;report&#34;</span><span class="p">,</span> <span class="s2">&#34;self_media&#34;</span><span class="p">]</span>  <span class="c1"># 来源类型</span>
+    <span class="n">credibility_score</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># 可信度评分 0-1</span>
+    <span class="n">extracted_at</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="n">related_sections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># 关联章节ID</span>
+    <span class="n">verified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DataPoint</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;数据点&#34;&#34;&#34;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">year</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Chart</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;图表配置&#34;&#34;&#34;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">chart_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;line&#34;</span><span class="p">,</span> <span class="s2">&#34;bar&#34;</span><span class="p">,</span> <span class="s2">&#34;pie&#34;</span><span class="p">,</span> <span class="s2">&#34;scatter&#34;</span><span class="p">,</span> <span class="s2">&#34;table&#34;</span><span class="p">,</span> <span class="s2">&#34;heatmap&#34;</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># 生成图表的Python代码</span>
+    <span class="n">image_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">section_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">CriticFeedback</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;评论家反馈&#34;&#34;&#34;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">target_section</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">issue_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;missing_source&#34;</span><span class="p">,</span> <span class="s2">&#34;logic_error&#34;</span><span class="p">,</span> <span class="s2">&#34;bias&#34;</span><span class="p">,</span> <span class="s2">&#34;hallucination&#34;</span><span class="p">,</span> <span class="s2">&#34;outdated&#34;</span><span class="p">,</span> <span class="s2">&#34;incomplete&#34;</span><span class="p">]</span>
+    <span class="n">severity</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&#34;critical&#34;</span><span class="p">,</span> <span class="s2">&#34;major&#34;</span><span class="p">,</span> <span class="s2">&#34;minor&#34;</span><span class="p">]</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">suggestion</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">resolved</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">AgentLog</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;Agent执行日志&#34;&#34;&#34;</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="n">datetime</span>
+    <span class="n">agent</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">action</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">input_summary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">output_summary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">duration_ms</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">tokens_used</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>调度器创建初始状态：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">state</span> <span class="o">=</span> <span class="n">create_initial_state</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">session_id</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后每个 Agent 都拿同一个 state：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">planner</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">deep_scout</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">architect</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">scout</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_analyst</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">wizard</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>所以不是每个 Agent 各自维护状态，而是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">ChiefArchitect 写 outline
+DeepScout 读 outline，写 facts/references
+DataAnalyst 读 facts，写 data_points/charts/knowledge_graph
+LeadWriter 读 facts/charts/references，写 final_report
+CriticMaster 读 final_report，写 critic_feedback/quality_score/phase
+</code></pre></td></tr></table>
+</div>
+</div><p>共享状态靠的是 同一个 Python dict 在多个 Agent 之间传递和修改。</p>
+<hr>
+<p>那实时事件怎么实现？</p>
+<p>调度器会在运行时注入一个异步队列：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">state</span><span class="p">[</span><span class="s2">&#34;_message_queue&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+<span class="n">message_queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Agent 调用 <code>BaseAgent.add_message(state, event_type, content)</code>。这个方法做两件事：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">add_message</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">event_type</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="s2">&#34;&#34;&#34;添加消息到消息队列&#34;&#34;&#34;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="n">event_type</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">content</span><span class="p">}</span>
+    <span class="n">state</span><span class="p">[</span><span class="s2">&#34;messages&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&#34;_message_queue&#34;</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&#34;_message_queue&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="o">...</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>把事件追加到 state[&ldquo;messages&rdquo;]</li>
+<li>如果 state[&quot;_message_queue&quot;] 存在，则 put_nowait(message)</li>
+</ol>
+<p>通过这个异步消息队列，就解耦了 agent 和 前端的 SSE 输出：</p>
+<ul>
+<li>Agent 只负责把消息放到队列里，只依赖共享状态，不需要耦合 FastAPI、StreamingResponse 或前端协议</li>
+<li>调度器负责把队列里的事件转成 SSE 输出。</li>
+</ul>
+<p>完整的事件流：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">Agent
+  -&gt; add_message()
+  -&gt; 写入 state[&#34;messages&#34;]
+  -&gt; 推入 asyncio.Queue
+  -&gt; 调度器从 Queue 读取
+  -&gt; yield 给 SSE
+  -&gt; 前端实时展示
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="32-单个-agent-的调度逻辑">3.2 单个 Agent 的调度逻辑</h3>
+<p>它是整个实时调度器的核心,通过抽象的 <code>run_agent_with_streaming(agent)</code>来组织任务调度</p>
+<pre class="mermaid">
+  
+flowchart TD
+  Start[&#34;准备执行 Agent&#34;] --&gt; CancelBefore{&#34;开始前已取消?&#34;}
+  CancelBefore -- 是 --&gt; Stop[&#34;返回，不再执行该 Agent&#34;]
+  CancelBefore -- 否 --&gt; CreateTask[&#34;asyncio.create_task(agent.process(state))&#34;]
+  CreateTask --&gt; Loop{&#34;task.done() ?&#34;}
+  Loop -- 否 --&gt; CancelDuring{&#34;执行中已取消?&#34;}
+  CancelDuring -- 是 --&gt; CancelTask[&#34;task.cancel() 并等待取消完成&#34;]
+  CancelTask --&gt; Stop
+  CancelDuring -- 否 --&gt; ReadQueue[&#34;wait_for(queue.get(), timeout=0.5)&#34;]
+  ReadQueue --&gt; GotMsg{&#34;读到事件?&#34;}
+  GotMsg -- 是 --&gt; YieldMsg[&#34;yield msg 给上层 SSE&#34;]
+  YieldMsg --&gt; Loop
+  GotMsg -- 超时 --&gt; Loop
+  Loop -- 是 --&gt; AwaitTask[&#34;await task 获取异常&#34;]
+  AwaitTask --&gt; Drain[&#34;drain queue\n输出剩余事件&#34;]
+  Drain --&gt; Done[&#34;Agent 阶段完成&#34;]
+
+</pre>
+
+<p>其中有几个关键点：</p>
+<p>调度器不是直接 <code>await agent.process(state)</code>，而是把 Agent 包成异步任务，后台运行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后一边等 Agent 跑，一边读队列：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">while</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">message_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="c1"># 让调度器最多等待 0.5 秒，然后回到循环检查取消状态。</span>
+    <span class="k">yield</span> <span class="n">msg</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这样 Agent 在后台跑，调度器可以同时做三件事：</p>
+<ol>
+<li>持续读取 Agent 发出的事件</li>
+<li>检查用户是否取消：如果取消标志出现，调度器取消当前 task，并提前结束当前研究流程。</li>
+<li>Agent 完成后清空剩余队列消息—drain queue</li>
+</ol>
+<p>这样的话，能能做到：Agent 执行中 -&gt; 持续产出事件 -&gt; 前端实时看到过程</p>
+<h3 id="33-任务中断取消">3.3 任务中断/取消</h3>
+<p>有了前两节的基础，就可以来搞任务的中断/取消啦:
+前端点击停止时，会调用：
+<code>POST /research/cancel/{session_id}</code>
+后端在：
+写 Redis 取消标记：
+<code>cache.set(f&quot;research:cancel:{session_id}&quot;, {&quot;cancelled&quot;: True}, expire=300)</code>
+调度器执行每个 Agent 时会反复检查：
+<code>is_research_cancelled(session_id)</code>
+如果发现取消：
+<code>task.cancel()</code>
+就会停止当前 Agent 的执行，调度器结束流程。</p>
+<p>完整的逻辑实现是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">前端点击停止</span>
+  <span class="o">-&gt;</span> <span class="n">POST</span> <span class="o">/</span><span class="n">research</span><span class="o">/</span><span class="n">cancel</span><span class="o">/</span><span class="p">{</span><span class="n">session_id</span><span class="p">}</span>
+  <span class="o">-&gt;</span> <span class="n">Redis</span> <span class="n">写</span> <span class="n">cancel</span> <span class="n">flag</span>
+  <span class="o">-&gt;</span> <span class="n">调度器每</span> <span class="mf">0.5</span> <span class="n">秒检查</span>
+  <span class="o">-&gt;</span> <span class="n">发现</span> <span class="n">cancelled</span>
+  <span class="o">-&gt;</span> <span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+  <span class="o">-&gt;</span> <span class="n">当前</span> <span class="n">Agent</span> <span class="n">被取消</span>
+  <span class="o">-&gt;</span> <span class="n">调度器结束流程</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这样的话，我们就靠着Redis cancel flag + asyncio task.cancel()，实现了类似 langgraph 的 checkpointer 机制。</p>
+<h3 id="34-检查点恢复">3.4 检查点/恢复</h3>
+<p>上面能取消任务了，那么我们怎么恢复呢？说到恢复，就必须要有 checkpoint 点，通过它来恢复。</p>
+<p>调度器在每个大阶段结束后保存检查点。
+例如 <code>planning</code> 结束后：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">save_checkpoint_async</span><span class="p">({</span>
+    <span class="s2">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;planning&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;completed&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;stats&#34;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>保存内容包括两类：</p>
+<ol>
+<li>后端状态state_json, 也就是当前的ResearchState：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">phase
+iteration
+outline
+facts
+charts
+final_report
+references
+critic_feedback
+...
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>前端 UI 状态ui_state_json,包括：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">research_steps
+search_results
+charts
+knowledge_graph
+streaming_report
+references
+</code></pre></td></tr></table>
+</div>
+</div><p>保存逻辑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">user_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ui_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">final_report</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">        保存检查点
+</span><span class="s2">
+</span><span class="s2">        Args:
+</span><span class="s2">            session_id: 研究会话 ID
+</span><span class="s2">            state: ResearchState 字典（后端状态）
+</span><span class="s2">            user_id: 用户 ID（可选）
+</span><span class="s2">            ui_state: 前端 UI 状态（研究步骤、搜索结果、图表等）
+</span><span class="s2">            final_report: 最终报告内容
+</span><span class="s2">
+</span><span class="s2">        Returns:
+</span><span class="s2">            检查点 ID，失败返回 None
+</span><span class="s2">        &#34;&#34;&#34;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># 提取关键信息</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;query&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;phase&#34;</span><span class="p">,</span> <span class="s2">&#34;planning&#34;</span><span class="p">)</span>
+            <span class="n">iteration</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;iteration&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># 清理 state 中不可序列化的内容</span>
+            <span class="o">...</span>
+            <span class="c1"># 查找现有检查点</span>
+            <span class="o">...</span>
+
+            <span class="k">if</span> <span class="n">existing</span><span class="p">:</span>
+                <span class="c1"># 更新现有检查点</span>
+                <span class="o">...</span>
+                <span class="n">existing</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&#34;running&#34;</span>
+                <span class="o">...</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># 创建新检查点</span>
+                <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">ResearchCheckpoint</span><span class="p">(</span>
+                    <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+                    <span class="n">user_id</span><span class="o">=</span><span class="n">UUID</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span> <span class="k">if</span> <span class="n">user_id</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+                    <span class="n">phase</span><span class="o">=</span><span class="n">phase</span><span class="p">,</span>
+                    <span class="n">iteration</span><span class="o">=</span><span class="n">iteration</span><span class="p">,</span>
+                    <span class="n">state_json</span><span class="o">=</span><span class="n">clean_state</span><span class="p">,</span>
+                    <span class="n">ui_state_json</span><span class="o">=</span><span class="n">clean_ui_state</span><span class="p">,</span>
+                    <span class="n">final_report</span><span class="o">=</span><span class="n">final_report</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">&#34;running&#34;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                <span class="n">checkpoint_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="c1"># 详细日志</span>
+            <span class="o">...</span>
+            <span class="k">return</span> <span class="n">checkpoint_id</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Failed to save checkpoint: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">None</span>
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<p>需要恢复的时候，这里要注意，要区分两种情况：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">1. GET /research/checkpoint/{session_id}/full
+   恢复前端 UI 展示
+
+2. POST /research/resume/{session_id}
+   恢复后端研究执行
+</code></pre></td></tr></table>
+</div>
+</div><p>当前前端在进入聊天页面时，会自动调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">GET /research/checkpoint/{session_id}/full
+</code></pre></td></tr></table>
+</div>
+</div><p>把之前已经产生的研究过程的 UI 状态回显，比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">研究步骤
+搜索结果
+图表
+知识图谱
+已生成的报告片段
+引用
+</code></pre></td></tr></table>
+</div>
+</div><p>它不会继续跑 Agent，也不会重新开始搜索。它只是读取数据库里的 checkpoint：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">research_checkpoints.state_json
+research_checkpoints.ui_state_json
+research_checkpoints.final_report
+</code></pre></td></tr></table>
+</div>
+</div><p>然后前端把 UI 还原出来。</p>
+<p>所以它解决的是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">用户刷新页面 / 重新进入会话
+还能看到之前的研究过程
+</code></pre></td></tr></table>
+</div>
+</div><p>它是“读状态”。</p>
+<ol start="2">
+<li><code>POST /resume</code> 是“继续后端任务”</li>
+</ol>
+<p>这个接口是让后端继续执行研究流程。</p>
+<p>它会调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">service_v2</span><span class="o">.</span><span class="n">research</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后后端执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_checkpoint</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>也就是把上次保存的后端 <code>ResearchState</code> 加载回来，再进入研究流程。</p>
+<p>所以它解决的是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">后端任务中断后，希望继续跑
+</code></pre></td></tr></table>
+</div>
+</div><p>它是“继续执行”。</p>
+<p>千万不能设计成只用一个接口，这是我一开始犯的🙅，和领导讨论的过程中，他及时发现了问题：</p>
+<ul>
+<li>如果页面一打开就调用 <code>/resume</code></li>
+</ul>
+<p>那会有问题：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">用户只是想看看历史结果
+但后端又开始继续跑 Agent
+又开始消耗模型 token
+又可能重新搜索
+又会改变 checkpoint
+</code></pre></td></tr></table>
+</div>
+</div><p>这不合理。</p>
+<p>所以页面加载时只能调用只读接口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">GET /checkpoint/full
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>如果只调用 <code>/checkpoint/full</code></li>
+</ul>
+<p>也有问题：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">前端只能恢复显示
+后端不会继续执行
+</code></pre></td></tr></table>
+</div>
+</div><p>所以当用户明确点击“继续研究”时，才应该调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">POST /resume/{session_id}
+</code></pre></td></tr></table>
+</div>
+</div><p>所以，正确逻辑实现应该是这样</p>
+<ol>
+<li>场景 A：用户刷新页面</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">前端进入 /chat/{session_id}
+  -&gt; GET /research/checkpoint/{session_id}/full
+  -&gt; 后端返回 checkpoint
+  -&gt; 前端恢复研究步骤、搜索结果、图表、报告
+  -&gt; 不继续执行任务
+</code></pre></td></tr></table>
+</div>
+</div><p>这个时候只是恢复 UI。</p>
+<ol start="2">
+<li>场景 B：用户点击“继续研究”</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">用户点击继续研究
+  -&gt; POST /research/resume/{session_id}
+  -&gt; 后端加载 state_json
+  -&gt; 后端继续执行 Agent 流程
+  -&gt; 后端通过 SSE 持续返回新事件
+  -&gt; 前端继续更新研究过程 UI
+</code></pre></td></tr></table>
+</div>
+</div><p>这个时候才继续执行。</p>
+<hr>
+<p>不过这个实现还是有待优化：这种恢复的逻辑设计不是“精确断点续跑”，这个版本能做到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">取消任务
+保存阶段级检查点
+恢复前端 UI
+加载后端 state
+</code></pre></td></tr></table>
+</div>
+</div><p>但还没完全做到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">从中断的具体 Agent/具体 phase 精确继续
+</code></pre></td></tr></table>
+</div>
+</div><p>因为 <code>_run_simplified()</code> 当前加载 checkpoint 后，还是按设计好的固定流程（具体过程见下一节）执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Plan -&gt; Research -&gt; Analyze -&gt; Write -&gt; Review...
+</code></pre></td></tr></table>
+</div>
+</div><p>它没有根据 checkpoint 里的 <code>phase</code> 或 <code>completed_steps</code> 跳过已完成阶段。</p>
+<p>所以现在的恢复更接近：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">加载旧状态，重新进入流程
+</code></pre></td></tr></table>
+</div>
+</div><p>而不是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">从上次中断点继续执行下一个节点
+</code></pre></td></tr></table>
+</div>
+</div><p>要做到真正恢复，需要再补：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">completed_steps
+next_step
+paused status
+phase-aware scheduler
+</code></pre></td></tr></table>
+</div>
+</div><p>例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">checkpoint.phase == &#34;analyzing&#34;
+completed_steps = [&#34;planning&#34;, &#34;researching&#34;]
+next_step = &#34;analyzing&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>恢复时调度器应该跳过 planning/researching，直接从 analyzing 继续。</p>
+<p>这个先记录下来了，后面再优化，因为还有其他东西要🧐，真让人头大啊。</p>
+<p>目前这套自定义的调度器架构，已经能解决：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">共享状态：
+  ResearchState dict 在所有 Agent 之间传递
+
+实时事件：
+  state[&#34;_message_queue&#34;] + BaseAgent.add_message()
+
+任务控制：
+  asyncio.create_task(agent.process(state))
+
+取消：
+  Redis cancel flag + task.cancel()
+
+检查点：
+  CheckpointService 保存 state_json + ui_state_json
+
+恢复展示：
+  前端加载 full checkpoint 恢复 UI
+
+继续执行：
+  后端已有 resume 雏形，但还不是严格断点的精准续跑
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="35-工作流的前置阶段">3.5 工作流的前置阶段</h3>
+<p>主流程设计的固定前置阶段是：<code>planning -&gt; researching -&gt; analyzing -&gt; writing</code></p>
+<p>对应执行顺序：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">ChiefArchitect
+DeepScout
+DataAnalyst
+CodeWizard
+LeadWriter
+</code></pre></td></tr></table>
+</div>
+</div><p>每个阶段开始前，调度器先 <code>yield {&quot;type&quot;: &quot;phase&quot;, ...}</code> 通知前端切换阶段，再设置 <code>state[&quot;phase&quot;]</code>，然后调用 <code>run_agent_with_streaming(agent)</code>。阶段结束后会：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">1. 清空 state[&#34;messages&#34;]
+2. update_ui_state()
+3. save_checkpoint_async(step_info)
+4. yield checkpoint_saved 事件
+</code></pre></td></tr></table>
+</div>
+</div><p><code>update_ui_state()</code> 会从后端状态提取前端恢复需要的数据，包括：</p>
+<ul>
+<li><code>research_steps</code></li>
+<li><code>search_results</code></li>
+<li><code>charts</code></li>
+<li><code>knowledge_graph</code></li>
+<li><code>streaming_report</code></li>
+<li><code>references</code></li>
+</ul>
+<p>这样即使用户刷新页面或恢复会话，也可以通过检查点拿到后端状态和 UI 展示状态。</p>
+<h3 id="36-工作流的审核">3.6 工作流的审核</h3>
+<p>固定阶段结束后进入审核循环。循环条件是：<code>state[&quot;iteration&quot;] &lt; state[&quot;max_iterations&quot;]</code></p>
+<p>每一轮先执行 <code>CriticMaster</code>。<code>CriticMaster</code> 根据报告质量和问题类型修改 <code>state[&quot;phase&quot;]</code>。调度器再根据 <code>state[&quot;phase&quot;]</code> 分流。</p>
+<p><img src="/agents/plan.png" alt=""></p>
+<p>审核有三条主要分支：</p>
+<ul>
+<li><code>COMPLETED</code>：审核通过或达到完成条件，退出循环。</li>
+<li><code>RE_RESEARCHING</code>：审核发现缺少信息，需要回到 <code>DeepScout</code> 补充搜索，再进入 <code>LeadWriter</code> 重写，之后回到审核。</li>
+<li><code>REVISING</code>：审核认为不需要新搜索，只需要 <code>LeadWriter</code> 根据反馈修订文字，之后回到审核。</li>
+</ul>
+<p>上面这套工作流，这就是当前不依赖 LangGraph 也能循环和回头调用的原因：循环逻辑由普通 <code>while</code> 加 <code>state[&quot;phase&quot;]</code> 分支完成，状态仍然集中保存在 <code>ResearchState</code> 中。</p>
+<h3 id="37-前后端sse交互时序">3.7 前后端SSE交互时序</h3>
+<p>基于上面的架构设计，前后端使用 SSE 的交互数据格式，也就清楚了：</p>
+<p><img src="/agents/sse.png" alt=""></p>
+<h2 id="4-与-langgraph-版本的差异">4. 与 LangGraph 版本的差异</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>保留的 LangGraph 路径</th>
+<th>当前手写调度器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>流程表达</td>
+<td>声明式状态图</td>
+<td>Python 顺序流程 + while 分支</td>
+</tr>
+<tr>
+<td>循环回跳</td>
+<td><code>review -&gt; revise -&gt; review</code></td>
+<td><code>reviewing -&gt; re_researching/revising -&gt; reviewing</code></td>
+</tr>
+<tr>
+<td>事件输出</td>
+<td>读取节点状态中的 <code>messages</code></td>
+<td>Agent 执行中实时读取 <code>asyncio.Queue</code></td>
+</tr>
+<tr>
+<td>分析阶段</td>
+<td>图定义逻辑表达</td>
+<td>抽象单 agent 逻辑组合</td>
+</tr>
+<tr>
+<td>补充搜索</td>
+<td>图定义逻辑表达 <code>RE_RESEARCHING</code></td>
+<td>审核后可回到 <code>DeepScout</code> 补充搜索</td>
+</tr>
+<tr>
+<td>取消</td>
+<td>节点执行逻辑、运行时wrapper控制层</td>
+<td>每 0.5 秒检查取消标志并取消 task</td>
+</tr>
+<tr>
+<td>检查点/UI 恢复</td>
+<td>传入 thread_id，checkpointer机制控制</td>
+<td>每阶段保存后端状态和 UI 状态</td>
+</tr>
+</tbody>
+</table>
+<p>当前自定义调度器，并不是替代了 LangGraph 的“循环能力”，而是补上了本次客户需要的更细的表达能力。</p>
+<h2 id="5实际效果">5.实际效果</h2>
+<p>当前设计带来的效果：
+<img src="/agents/2.png" alt="">
+<img src="/agents/3.png" alt="">
+<img src="/agents/5.png" alt="">
+<img src="/agents/7.png" alt=""></p>
+<ul>
+<li>前端能看到研究过程，而不是只等每个阶段的结果和最终报告。</li>
+<li>搜索、分析、图表、审核等长耗时阶段可以持续推送进展。</li>
+<li>用户取消研究时，当前 Agent 可以被调度器取消。</li>
+<li>每个阶段结束后都会保存检查点，支持后续恢复。</li>
+<li>审核发现问题后，可以回头补充搜索或修订报告。</li>
+<li>Agent 与 SSE 框架解耦，Agent 只负责写共享状态和发送领域事件。</li>
+</ul>
+<p>当然，这套架构也有个明显的缺点是：流程逻辑分散在 Python 调度代码中，不如 LangGraph 图直观。后续如果要重新切回 LangGraph，需要补齐节点内部实时事件流、补充搜索分支、取消和检查点这些运行时能力。</p>
+<p>目前已经预留了口子，后期通过策略模式，进行动态切换</p>
+<ul>
+<li>当前执行策略由 <code>ExecutionStrategySelector</code> 集中选择：<code>auto/queue</code> 使用 <code>QueueStreamingStrategy</code></li>
+<li><code>langgraph</code> 在图可用时使用 <code>LangGraphStrategy</code>，<code>hybrid</code> 暂时降级到 queue。</li>
+</ul>
+<p>如果后面继续优化，到时候在记录吧，今天就先到这了👋🏻</p>
+    </div>
+
+    <div class="post-copyright">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    
+</div><footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E5%8F%A4%E6%B3%95%E7%BC%96%E7%A8%8B%E4%B9%8B%E6%89%8B%E5%86%99%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B601-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">古法编程之手写爬虫框架01-基础架构</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/mcp%E6%98%AF%E4%BB%80%E4%B9%88/">
+            <span class="next-text nav-default">MCP是什么</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2026-01-08 23:56:26 \u002b0800 CST',
+        title: '多Agent编排之手写调度器',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'hugo-blog-comments',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>沐桢</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+  
+</body>
+</html>

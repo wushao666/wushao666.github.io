@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>手写miniVue3-02实现effect的runner-scheduler-stop功能 - 林川在Coding</title>
+  <title>手写vue3-02实现runner-scheduler-stop功能 - 林川在Coding</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -39,19 +39,19 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="手写miniVue3-02实现effect的runner-scheduler-stop功能" />
+<meta property="og:title" content="手写vue3-02实现runner-scheduler-stop功能" />
 <meta property="og:description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://wushao666.github.io/post/%E6%89%8B%E5%86%99minivue3-02%E5%AE%9E%E7%8E%B0effect%E7%9A%84runner-scheduler-stop%E5%8A%9F%E8%83%BD/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2022-10-09T11:58:26+08:00" />
+<meta property="article:published_time" content="2022-03-15T11:58:26+08:00" />
 <meta property="article:modified_time" content="2022-10-09T17:00:41+08:00" />
 
-<meta itemprop="name" content="手写miniVue3-02实现effect的runner-scheduler-stop功能">
-<meta itemprop="description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用"><meta itemprop="datePublished" content="2022-10-09T11:58:26+08:00" />
+<meta itemprop="name" content="手写vue3-02实现runner-scheduler-stop功能">
+<meta itemprop="description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用"><meta itemprop="datePublished" content="2022-03-15T11:58:26+08:00" />
 <meta itemprop="dateModified" content="2022-10-09T17:00:41+08:00" />
 <meta itemprop="wordCount" content="2150">
 <meta itemprop="keywords" content="vue3," /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="手写miniVue3-02实现effect的runner-scheduler-stop功能"/>
+<meta name="twitter:title" content="手写vue3-02实现runner-scheduler-stop功能"/>
 <meta name="twitter:description" content="实现effect的runner 前面一节，已经实现了基础版的reactive和effect，但是vue3的effect实际上还有另外三种副作用"/>
 
 <!--[if lte IE 9]>
@@ -129,10 +129,10 @@
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">手写miniVue3-02实现effect的runner-scheduler-stop功能</h1>
+      <h1 class="post-title">手写vue3-02实现runner-scheduler-stop功能</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2022-10-09 </span>
+        <span class="post-time"> 2022年03月15日 11:58 </span>
         <div class="post-category">
             <a href="/categories/vue/"> vue </a>
             </div>
@@ -683,35 +683,27 @@
     </div>
 
     <div class="post-copyright">
-  <p class="copyright-item">
-    <span class="item-title">文章作者</span>
-    <span class="item-content">沐桢</span>
-  </p>
-  <p class="copyright-item">
-    <span class="item-title">上次更新</span>
-    <span class="item-content">
-        2022-10-09
-        <a href="/commit/4b3a9d29ce2002678eb541d77cd47ba47954315f" title="What:">(4b3a9d2)</a>
-    </span>
-  </p>
-  
-  <p class="copyright-item">
-    <span class="item-title">许可协议</span>
-    <span class="item-content">MIT</span>
-  </p>
-</div>
-<footer class="post-footer">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    <p class="copyright-item">
+        <span class="item-title">许可协议</span>
+        <span class="item-content">MIT</span>
+    </p>
+</div><footer class="post-footer">
       <div class="post-tags">
           <a href="/tags/vue3/">vue3</a>
           </div>
       <nav class="post-nav">
         <a class="prev" href="/post/%E6%89%8B%E5%86%99minivue3-03%E5%AE%9E%E7%8E%B0readonly%E5%B9%B6%E9%87%8D%E6%9E%84%E5%93%8D%E5%BA%94%E5%BC%8F/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">手写miniVue3-03实现readonly并重构响应式模块</span>
+            <span class="prev-text nav-default">手写vue3-03实现readonly并重构响应式模块</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/%E6%89%8B%E5%86%99minivue3-01%E5%AE%9E%E7%8E%B0effect%E5%92%8Creactive/">
-            <span class="next-text nav-default">手写miniVue3-01实现effect和reactive</span>
+            <span class="next-text nav-default">手写vue3-01实现effect和reactive</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
@@ -724,8 +716,8 @@
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2022-10-09 11:58:26 \u002b0800 CST',
-        title: '手写miniVue3-02实现effect的runner-scheduler-stop功能',
+        id: '2022-03-15 11:58:26 \u002b0800 CST',
+        title: '手写vue3-02实现runner-scheduler-stop功能',
         clientID: 'Ov23liIOS4xVWBCr8CiQ',
         clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
         repo: 'hugo-blog-comments',
