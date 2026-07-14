@@ -26,7 +26,7 @@
 
 ### 文件变更自动同步
 
-`scripts/wushao666-auto-git-sync.sh` 用于监听本仓库中的本地文件变化。当 `git status --porcelain` 检测到存在变更时，脚本会自动执行：
+`scripts/wushao666-auto-git-sync.sh` 用于监听本仓库中的本地文件变化，也支持被其他脚本以 `--once` 模式触发一次性同步。当 `git status --porcelain` 检测到存在变更时，脚本会自动执行：
 
 ```bash
 git add -A
@@ -47,6 +47,14 @@ git push origin <当前分支>
 brew install fswatch
 ./scripts/wushao666-auto-git-sync.sh
 ```
+
+如需由 `blog-generator` 的 git hook 在源码提交后触发一次同步，可运行：
+
+```bash
+./scripts/wushao666-auto-git-sync.sh --once
+```
+
+`--once` 模式只执行一次 `git add -> commit -> push`，不会启动 `fswatch` 常驻监听，也不依赖 `fswatch`。
 
 如需在 macOS 登录后常驻运行，可将 `scripts/wushao666-com.wushao.auto-git-sync.plist` 安装到 `~/Library/LaunchAgents/`，再用 `launchctl bootstrap` 启动。
 
