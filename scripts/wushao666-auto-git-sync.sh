@@ -134,6 +134,23 @@ sync_changes() {
 }
 
 main() {
+  if [ "${1:-}" = "--once" ]; then
+    with_lock sync_changes
+    exit $?
+  fi
+
+  if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+    printf 'Usage: %s [--once]\n' "$(basename "$0")"
+    printf '  --once  Run one git add/commit/push cycle without starting fswatch.\n'
+    exit 0
+  fi
+
+  if [ "$#" -gt 0 ]; then
+    log "Unknown argument: $1"
+    printf 'Usage: %s [--once]\n' "$(basename "$0")"
+    exit 2
+  fi
+
   require_command fswatch
 
   if ! cd "$REPO_ROOT"; then
