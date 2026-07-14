@@ -10,7 +10,7 @@
   
   <url>
     <loc>http://wushao666.github.io/post/</loc>
-    <lastmod>2026-07-14T16:31:59+08:00</lastmod>
+    <lastmod>2026-07-14T20:58:46+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -24,21 +24,28 @@
   
   <url>
     <loc>http://wushao666.github.io/</loc>
-    <lastmod>2026-07-14T16:31:59+08:00</lastmod>
+    <lastmod>2026-07-14T20:58:46+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/</loc>
-    <lastmod>2026-07-14T16:31:59+08:00</lastmod>
+    <lastmod>2026-07-14T20:58:46+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/</loc>
-    <lastmod>2026-07-14T10:45:55+08:00</lastmod>
+    <lastmod>2026-07-14T20:58:46+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8Blanggraph%E8%B0%83%E5%BA%A6/</loc>
+    <lastmod>2026-07-14T20:58:46+08:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

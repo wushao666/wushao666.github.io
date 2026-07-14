@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>多Agent编排之langgraph调度 - 林川在Coding</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="沐桢" /><meta name="description" content="现在 agent 开发形势，就和当初前端从蛮荒时代进入到vue/react/solid框架时代一样，花式复杂啊，尤其是拆分成多个 agent 后，调度管理就变得复杂起来。
+多Agent核心问题不是调用多个 Agent，而是管理一个长期、可中断、可恢复、可分支的工作流。
+" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.92.2 with theme even" />
+
+
+<link rel="canonical" href="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8Blanggraph%E8%B0%83%E5%BA%A6/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="多Agent编排之langgraph调度" />
+<meta property="og:description" content="现在 agent 开发形势，就和当初前端从蛮荒时代进入到vue/react/solid框架时代一样，花式复杂啊，尤其是拆分成多个 agent 后，调度管理就变得复杂起来。
+多Agent核心问题不是调用多个 Agent，而是管理一个长期、可中断、可恢复、可分支的工作流。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8Blanggraph%E8%B0%83%E5%BA%A6/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2025-11-16T00:13:00+08:00" />
+<meta property="article:modified_time" content="2026-07-14T20:58:46+08:00" />
+
+<meta itemprop="name" content="多Agent编排之langgraph调度">
+<meta itemprop="description" content="现在 agent 开发形势，就和当初前端从蛮荒时代进入到vue/react/solid框架时代一样，花式复杂啊，尤其是拆分成多个 agent 后，调度管理就变得复杂起来。
+多Agent核心问题不是调用多个 Agent，而是管理一个长期、可中断、可恢复、可分支的工作流。"><meta itemprop="datePublished" content="2025-11-16T00:13:00+08:00" />
+<meta itemprop="dateModified" content="2026-07-14T20:58:46+08:00" />
+<meta itemprop="wordCount" content="3567">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="多Agent编排之langgraph调度"/>
+<meta name="twitter:description" content="现在 agent 开发形势，就和当初前端从蛮荒时代进入到vue/react/solid框架时代一样，花式复杂啊，尤其是拆分成多个 agent 后，调度管理就变得复杂起来。
+多Agent核心问题不是调用多个 Agent，而是管理一个长期、可中断、可恢复、可分支的工作流。"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">林川在Coding</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">林川在Coding</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">About</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">多Agent编排之langgraph调度</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2025年11月16日 00:13 </span>
+        
+          <span class="more-meta"> 约 3567 字 </span>
+          <span class="more-meta"> 预计阅读 8 分钟 </span>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#1-多agent核心问题">1. 多Agent核心问题</a></li>
+        <li><a href="#2-设计目标">2. 设计目标</a></li>
+        <li><a href="#3-架构实现">3. 架构实现</a>
+          <ul>
+            <li><a href="#31-图结构">3.1 图结构</a></li>
+            <li><a href="#32-节点到-agent-的映射">3.2 节点到 Agent 的映射</a></li>
+            <li><a href="#33-条件边和循环">3.3 条件边和循环</a></li>
+            <li><a href="#34-主逻辑">3.4 主逻辑</a></li>
+          </ul>
+        </li>
+        <li><a href="#4-工程化优化">4. 工程化优化</a>
+          <ul>
+            <li><a href="#41-取消">4.1 <strong>取消</strong></a></li>
+            <li><a href="#42-检查点--ui-恢复">4.2 <strong>检查点 / UI 恢复</strong></a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>现在 agent 开发形势，就和当初前端从蛮荒时代进入到vue/react/solid框架时代一样，花式复杂啊，尤其是拆分成多个 agent 后，调度管理就变得复杂起来。</p>
+<p><strong>多Agent核心问题不是调用多个 Agent，而是管理一个长期、可中断、可恢复、可分支的工作流。</strong></p>
+<h2 id="1-多agent核心问题">1. 多Agent核心问题</h2>
+<p>多 Agent 一旦复杂起来，会遇到这些问题：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>本质</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 谁先执行、谁后执行</td>
+<td>控制流</td>
+</tr>
+<tr>
+<td>上一个 Agent 的结果怎么传给下一个</td>
+<td>状态管理</td>
+</tr>
+<tr>
+<td>某个 Agent 失败后怎么重试或降级</td>
+<td>错误恢复</td>
+</tr>
+<tr>
+<td>用户中途取消、暂停、恢复</td>
+<td>生命周期管理</td>
+</tr>
+<tr>
+<td>中间结果怎么保存</td>
+<td>checkpoint</td>
+</tr>
+<tr>
+<td>UI 怎么展示当前阶段</td>
+<td>过程事件</td>
+</tr>
+<tr>
+<td>是否需要根据结果走不同分支</td>
+<td>条件路由</td>
+</tr>
+<tr>
+<td>多轮研究如何接着上次状态继续</td>
+<td>可恢复执行</td>
+</tr>
+</tbody>
+</table>
+<p>这些东西如果不用框架，也能写，但会逐渐变成你自己手写一个“工作流引擎”。
+多 Agent 系统的复杂度主要来自“状态流转”，不是来自“Agent 调用”，所以LangGraph用了有向图处理，但是只靠图不是万能的，也需要工程上架构的实现，后面会讲到。</p>
+<p>这个图处理方式，难道是什么新概念吗？</p>
+<p>当然不是！！！软件工程界，处处都是相似的思想：K8s 用 Pod 依赖图调度容器，React 用组件树管理渲染——当系统中存在复杂的依赖关系和条件分支时，图是最自然的建模方式。</p>
+<p>LangGraph 的价值不是“它能调用Agent”，就像一句名言“当你觉得足够复杂时，就把它分层“，于是 langgraph 把：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">节点
+边
+状态
+条件跳转
+检查点
+中断
+恢复
+事件流
+</code></pre></td></tr></table>
+</div>
+</div><p>这些能力抽象成一个个独立的分层逻辑。</p>
+<p>在之前的简单系统中，我们可以用 <code>asyncio</code> / service 编排，开始可能是这样：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">plan</span> <span class="o">=</span> <span class="k">await</span> <span class="n">planner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">search</span> <span class="o">=</span> <span class="k">await</span> <span class="n">searcher</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+<span class="n">analysis</span> <span class="o">=</span> <span class="k">await</span> <span class="n">analyst</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">search</span><span class="p">)</span>
+<span class="n">report</span> <span class="o">=</span> <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">analysis</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>但做着做着就会变成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">如果 planner 结果不足，重新规划
+如果 search 失败，换搜索源
+如果 analyst 判断证据不足，回到 search
+如果用户取消，停止当前任务
+如果服务重启，从上次阶段恢复
+如果前端刷新，恢复 UI 过程状态
+如果某个节点超时，进入降级节点
+</code></pre></td></tr></table>
+</div>
+</div><p>这时已经不是简单函数调用，而是一个图：</p>
+<pre class="mermaid">
+  
+flowchart TD
+    A[Planner] --&gt; B[Searcher]
+    B --&gt; C[Analyst]
+    C --&gt;|证据不足| B
+    C --&gt;|证据充分| D[Writer]
+    B --&gt;|搜索失败| E[Fallback Search]
+    E --&gt; C
+    D --&gt; F[Final Report]
+
+</pre>
+
+<p>用代码实现这样一幅图，是不是看起来就清爽多了，不用线性函数一堆了，毕竟写代码太容易同步面条式代码了…</p>
+<h2 id="2-设计目标">2. 设计目标</h2>
+<p>基于LangGraph的设计目标有三点：</p>
+<ol>
+<li>用声明式图表达业务逻辑中的标准研究流程。</li>
+<li>用 <code>ResearchState</code> 作为所有 Agent 共享的状态类型。</li>
+<li>用条件边表达审核后的循环和结束决策。</li>
+</ol>
+<p>对应的抽象关系是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">节点: 一个 Agent 阶段
+边: 阶段之间的固定流转
+条件边: 根据 state 决定下一步
+ResearchState: 图中所有节点共同读写的全局工作记忆
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="3-架构实现">3. 架构实现</h2>
+<p>接下来简单的看一下调度过程：</p>
+<pre class="mermaid">
+  
+flowchart TD
+  Init[&#34;DeepResearchGraph.__init__&#34;] --&gt; ImportCheck{&#34;LANGGRAPH_AVAILABLE ?&#34;}
+  ImportCheck -- 否 --&gt; NoGraph[&#34;self.graph = None\n使用非 LangGraph 路径（兜底编排逻辑）&#34;]
+  ImportCheck -- 是 --&gt; Build[&#34;_build_langgraph()&#34;]
+
+  Build --&gt; StateGraph[&#34;StateGraph(ResearchState)&#34;]
+  StateGraph --&gt; Nodes[&#34;add_node\nplan / research / analyze / write / review / revise&#34;]
+  Nodes --&gt; Entry[&#34;set_entry_point(&#39;plan&#39;)&#34;]
+  Entry --&gt; Edges[&#34;add_edge\nplan -&gt; research -&gt; analyze -&gt; write -&gt; review&#34;]
+  Edges --&gt; Conditional[&#34;add_conditional_edges\nreview -&gt; revise 或 END&#34;]
+  Conditional --&gt; Loop[&#34;add_edge(&#39;revise&#39;, &#39;review&#39;)&#34;]
+  Loop --&gt; Compile[&#34;workflow.compile()&#34;]
+  Compile --&gt; Graph[&#34;self.graph&#34;]
+
+</pre>
+
+<p>mermaid 图中的每个节点，都是 langgraph 的一个抽象层实现，还是很好用的。</p>
+<p>构建入口在 <code>DeepResearchGraph.__init__()</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">if LANGGRAPH_AVAILABLE:
+    self.graph = self._build_langgraph()
+else:
+    self.graph = self._build_simple_line()
+</code></pre></td></tr></table>
+</div>
+</div><p><code>LANGGRAPH_AVAILABLE</code> 来自模块加载时对 <code>StateGraph</code> 和 <code>END</code> 的导入结果。这样设计的目的是不增加复杂度，通过配置控制或者后面引入决策层，动态判断，总之这里的目的是 优雅降级到非 LangGraph 路径。</p>
+<p>例如某个客户的工作流只是固定流程：<code>规划 -&gt; 搜索 -&gt; 分析 -&gt; 报告</code>, 线性编排就足够满足了，这就是兜底层。</p>
+<h3 id="31-图结构">3.1 图结构</h3>
+<p>LangGraph 图在 <code>_build_langgraph()</code> 中定义：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">workflow = StateGraph(ResearchState)
+
+workflow.add_node(&#34;plan&#34;, self._plan_node)
+workflow.add_node(&#34;research&#34;, self._research_node)
+workflow.add_node(&#34;analyze&#34;, self._analyze_node)
+workflow.add_node(&#34;write&#34;, self._write_node)
+workflow.add_node(&#34;review&#34;, self._review_node)
+workflow.add_node(&#34;revise&#34;, self._revise_node)
+
+workflow.set_entry_point(&#34;plan&#34;)
+
+workflow.add_edge(&#34;plan&#34;, &#34;research&#34;)
+workflow.add_edge(&#34;research&#34;, &#34;analyze&#34;)
+workflow.add_edge(&#34;analyze&#34;, &#34;write&#34;)
+workflow.add_edge(&#34;write&#34;, &#34;review&#34;)
+
+workflow.add_conditional_edges(
+    &#34;review&#34;,
+    self._should_revise,
+    {
+        &#34;revise&#34;: &#34;revise&#34;,
+        &#34;complete&#34;: END
+    }
+)
+
+workflow.add_edge(&#34;revise&#34;, &#34;review&#34;)
+return workflow.compile()
+</code></pre></td></tr></table>
+</div>
+</div><p>状态图如下：</p>
+<pre class="mermaid">
+  
+stateDiagram-v2
+  [*] --&gt; plan
+  plan --&gt; research
+  research --&gt; analyze
+  analyze --&gt; write
+  write --&gt; review
+  review --&gt; revise: _should_revise == &#34;revise&#34;
+  review --&gt; [*]: _should_revise == &#34;complete&#34;
+  revise --&gt; review
+
+</pre>
+
+<p>这个图表达的是业务中的一个最小闭环：先规划、搜索、分析、写作，再审核。审核不通过时修订，修订后回到审核；审核通过或达到终止条件时结束。</p>
+<h3 id="32-节点到-agent-的映射">3.2 节点到 Agent 的映射</h3>
+<p>进一步解释langgraph 的抽象节点的映射关系，就是如下：
+<pre class="mermaid">
+  
+flowchart LR
+  subgraph LangGraph[&#34;LangGraph nodes&#34;]
+    Plan[&#34;plan&#34;]
+    Research[&#34;research&#34;]
+    Analyze[&#34;analyze&#34;]
+    Write[&#34;write&#34;]
+    Review[&#34;review&#34;]
+    Revise[&#34;revise&#34;]
+  end
+
+  subgraph Agents[&#34;Agents&#34;]
+    Architect[&#34;ChiefArchitect&#34;]
+    Scout[&#34;DeepScout&#34;]
+    Wizard[&#34;CodeWizard&#34;]
+    Writer[&#34;LeadWriter&#34;]
+    Critic[&#34;CriticMaster&#34;]
+    Analyst[&#34;DataAnalyst\n当前未接入 LangGraph 图&#34;]
+  end
+
+  Plan --&gt; Architect
+  Research --&gt; Scout
+  Analyze --&gt; Wizard
+  Write --&gt; Writer
+  Review --&gt; Critic
+  Revise --&gt; Writer
+
+</pre>
+</p>
+<p>各节点逻辑如下：</p>
+<table>
+<thead>
+<tr>
+<th>节点</th>
+<th>实现函数</th>
+<th>阶段 / Agent</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plan</code></td>
+<td><code>_plan_node</code></td>
+<td><code>INIT</code> / <code>ChiefArchitect</code></td>
+<td>分析问题，生成研究大纲、实体和子问题</td>
+</tr>
+<tr>
+<td><code>research</code></td>
+<td><code>_research_node</code></td>
+<td><code>RESEARCHING</code> / <code>DeepScout</code></td>
+<td>搜索资料，沉淀事实和来源</td>
+</tr>
+<tr>
+<td><code>analyze</code></td>
+<td><code>_analyze_node</code></td>
+<td><code>ANALYZING</code> / <code>CodeWizard</code></td>
+<td>数据分析和可视化</td>
+</tr>
+<tr>
+<td><code>write</code></td>
+<td><code>_write_node</code></td>
+<td><code>WRITING</code> / <code>LeadWriter</code></td>
+<td>撰写最终报告</td>
+</tr>
+<tr>
+<td><code>review</code></td>
+<td><code>_review_node</code></td>
+<td><code>REVIEWING</code> / <code>CriticMaster</code></td>
+<td>审核报告并写入质量反馈</td>
+</tr>
+<tr>
+<td><code>revise</code></td>
+<td><code>_revise_node</code></td>
+<td><code>REVISING</code> / <code>LeadWriter</code></td>
+<td>根据审核反馈修订报告</td>
+</tr>
+</tbody>
+</table>
+<p>每个节点的实现，有一个统一的基类实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">state = dict(state)
+state[&#34;phase&#34;] = 某个 ResearchPhase
+result = await agent.process(state)
+return dict(result)
+</code></pre></td></tr></table>
+</div>
+</div><p>先复制状态再改阶段，是为了避免直接改动传入对象时产生难以追踪的副作用；节点返回新的状态字典，让 LangGraph 继续把它交给下一个节点。</p>
+<p>不同的节点逻辑，需要自定义实现。</p>
+<h3 id="33-条件边和循环">3.3 条件边和循环</h3>
+<p>就像人类做判断一样，多 agent状态之所以复杂，就是因为涉及到了判断后的流转：
+例如审核之后的路由函数是 <code>_should_revise(state)</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">if state[&#34;unresolved_issues&#34;] &gt; 0 and state[&#34;iteration&#34;] &lt; state[&#34;max_iterations&#34;]:
+    return &#34;revise&#34;
+return &#34;complete&#34;
+</code></pre></td></tr></table>
+</div>
+</div><p>这个函数把审核结果转成 LangGraph 的路由标签：</p>
+<ul>
+<li><code>revise</code>：进入 <code>revise</code> 节点。</li>
+<li><code>complete</code>：进入 <code>END</code>，结束图执行。</li>
+</ul>
+<p><code>workflow.add_edge(&quot;revise&quot;, &quot;review&quot;)</code> 形成回路，因此 LangGraph 图具备“修订后回到审核”的循环能力。</p>
+<pre class="mermaid">
+  
+flowchart TD
+  Review[&#34;review\nCriticMaster&#34;] --&gt; Decision{&#34;unresolved_issues &gt; 0\nand iteration &lt; max_iterations ?&#34;}
+  Decision -- 是 --&gt; Revise[&#34;revise\nLeadWriter&#34;]
+  Revise --&gt; Review
+  Decision -- 否 --&gt; End[&#34;END&#34;]
+
+</pre>
+
+<p>这里是极简的表达 <code>review -&gt; revise -&gt; review</code>。
+实际业务中，架构设计我们可以自己决定，但业务逻辑要和客户确认，就像工作流的制定要和客户讨论，不是拍脑袋想出来的。</p>
+<p>像我们实际上，还有补充搜索回路，为了避免漏掉信息和信息源的可靠性：<code>RE_RESEARCHING -&gt; DeepScout -&gt; LeadWriter -&gt; Review</code> ，等等等的工程实践，都属于定制化了，就不具有普适性了。</p>
+<h3 id="34-主逻辑">3.4 主逻辑</h3>
+<p>前面基础抽象层搞完后，就进入到主逻辑入口了 <code>_run_with_langgraph(state)</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">yielded_count = 0
+
+async for output in self.graph.astream(state):
+    for node_name, node_state in output.items():
+        if isinstance(node_state, dict) and &#34;messages&#34; in node_state:
+            messages = node_state[&#34;messages&#34;]
+            new_messages = messages[yielded_count:]
+            for message in new_messages:
+                yield message
+            yielded_count = len(messages)
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="/agents/langgraph_sse.png" alt=""></p>
+<p><code>yielded_count</code> 用于避免重复输出。因为每个节点返回的状态里可能包含累计的 <code>messages</code>，执行器只取上次输出之后的新消息。</p>
+<p>上面这套基本是标准的langgraph 调度逻辑了，特别洗的细节，可以直接靠文档补全啦，最难的还是工作流的逻辑设计。</p>
+<p>我再简单分享一下，我在工程化上的几点优化实践，算是小小的抛砖引玉😋</p>
+<h2 id="4-工程化优化">4. 工程化优化</h2>
+<p>众所周知，大模型如果做各种深入调研，组合多个 agent 的结果进行分析后，在输出，时间会很久，客户也有可能中断任务，毕竟都是在烧 token 呀。</p>
+<p>所以如何取消、恢复任务呢？</p>
+<p>LangGraph中这两个能力一般不放在“图结构定义”里，而是放在 <strong>节点执行逻辑、运行时控制层、checkpoint saver、事件流封装层</strong> 里实现。</p>
+<h3 id="41-取消">4.1 <strong>取消</strong></h3>
+<p>LangGraph本身没有取消的功能，业务上我们可以使用 flag 标志，“每 0.5 秒检查取消标志”：</p>
+<ol>
+<li>外层运行时创建 <code>asyncio.Task</code></li>
+<li>后端维护一个 <code>cancel_flag</code></li>
+<li>每 0.5 秒轮询取消标志</li>
+<li>如果用户取消，则调用 <code>task.cancel()</code></li>
+<li>LangGraph 节点内部也要配合处理中断，避免长时间阻塞</li>
+</ol>
+<p>例如有这样一个取消的逻辑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">async</span> <span class="k">def</span> <span class="nf">run_graph_with_cancel</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">run_id</span><span class="p">):</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span><span class="n">initial_state</span><span class="p">))</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+            <span class="k">if</span> <span class="k">await</span> <span class="n">cancel_store</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">(</span><span class="n">run_id</span><span class="p">):</span>
+                <span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="n">ResearchCancelled</span><span class="p">()</span>
+
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="k">await</span> <span class="n">task</span>
+
+    <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">save_cancelled_state</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
+        <span class="k">raise</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>但这里又有一个坑点：
+如果某个 LangGraph 节点内部正在执行一个很长的同步调用，比如阻塞式搜索、同步 LLM 请求等等任务，<code>task.cancel()</code> 不一定能立刻生效。</p>
+<p>所以节点内部最好也做协作式取消：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">async</span> <span class="k">def</span> <span class="nf">search_node</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="k">if</span> <span class="k">await</span> <span class="n">cancel_store</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&#34;run_id&#34;</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="n">ResearchCancelled</span><span class="p">()</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">search_service</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="k">await</span> <span class="n">cancel_store</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&#34;run_id&#34;</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="n">ResearchCancelled</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;search_result&#34;</span><span class="p">:</span> <span class="n">result</span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果是流式 LLM，可以在 token/chunk 循环中检查取消：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">llm</span><span class="o">.</span><span class="n">astream</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+    <span class="k">if</span> <span class="k">await</span> <span class="n">cancel_store</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">(</span><span class="n">run_id</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ResearchCancelled</span><span class="p">()</span>
+
+    <span class="k">yield</span> <span class="n">chunk</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这个优化，相当于实现了一个抽象层，哈哈哈真的是万能的分层理论：</p>
+<ul>
+<li>取消 task， 图运行外层 runtime wrapper</li>
+<li>节点内及时取消，每个耗时节点内部检查 cancel flag</li>
+<li>0.5 秒超市检查，外层 task supervisor</li>
+<li>SSE 通知取消，外层捕获取消异常后发送事件</li>
+</ul>
+<h3 id="42-检查点--ui-恢复">4.2 <strong>检查点 / UI 恢复</strong></h3>
+<p>LangGraph 有自己的 checkpoint 机制，可以保存 <strong>图状态</strong>，比如当前 state、当前节点、下一步要执行什么。通常通过 checkpointer 实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">langgraph.checkpoint.memory</span> <span class="kn">import</span> <span class="n">MemorySaver</span>
+
+<span class="n">checkpointer</span> <span class="o">=</span> <span class="n">MemorySaver</span><span class="p">()</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">checkpointer</span><span class="o">=</span><span class="n">checkpointer</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这种内存式的 <code>MemorySaver</code>做检查点，小项目可以，但是生产环境时，通常是换成 PostgreSQL、Redis。</p>
+<p>运行时需要传入 <code>thread_id</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;configurable&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&#34;thread_id&#34;</span><span class="p">:</span> <span class="n">run_id</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>恢复时用同一个 <code>thread_id</code> 继续：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">state</span> <span class="o">=</span> <span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">aget_state</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>但是要注意如果想达到UI 恢复，不光要保存后端图状态，也要保存前端 UI 状态：</p>
+<ul>
+<li>LangGraph checkpoint 保存 agent state、messages、中间结果、下一节点，可以使用LangGraph checkpointer</li>
+<li>UI checkpoint 保存阶段列表、进度、卡片、日志、SSE 事件、展示状态，可以使用 业务表 / Redis / checkpoint 表扩展字段</li>
+</ul>
+<p>我设计的是：每个节点返回业务状态后，同时发出一个 UI 事件，并持久化 UI snapshot。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">async</span> <span class="k">def</span> <span class="nf">analysis_node</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">do_analysis</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="n">new_state</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&#34;analysis&#34;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+        <span class="s2">&#34;stage&#34;</span><span class="p">:</span> <span class="s2">&#34;analysis_done&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">await</span> <span class="n">ui_state_store</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+        <span class="n">run_id</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&#34;run_id&#34;</span><span class="p">],</span>
+        <span class="n">ui_state</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&#34;currentStage&#34;</span><span class="p">:</span> <span class="s2">&#34;analysis_done&#34;</span><span class="p">,</span>
+            <span class="s2">&#34;progress&#34;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+            <span class="s2">&#34;cards&#34;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_state</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>恢复时：</p>
+<ol>
+<li>用 LangGraph <code>thread_id</code> 恢复后端执行状态</li>
+<li>从业务表恢复 UI 状态</li>
+<li>前端重新拉取历史事件 / UI snapshot</li>
+<li>如果任务未完成，可以继续订阅 SSE</li>
+</ol>
+<p>整体结构可以这样理解：</p>
+<pre class="mermaid">
+  
+flowchart TD
+    A[用户发起研究] --&gt; B[创建 run_id / thread_id]
+    B --&gt; C[启动 LangGraph task]
+    C --&gt; D[节点执行]
+    D --&gt; E[LangGraph Checkpoint 保存后端 state]
+    D --&gt; F[业务 UI Store 保存 UI snapshot]
+    C --&gt; G[Supervisor 每 0.5 秒检查 cancel flag]
+    G --&gt;|取消| H[task.cancel]
+    H --&gt; I[保存 cancelled 状态并发送 SSE]
+    E --&gt; J[后端恢复]
+    F --&gt; K[前端 UI 恢复]
+
+</pre>
+    </div>
+
+    <div class="post-copyright">
+    <p class="copyright-item">
+        <span class="item-title">文章作者</span>
+        <span class="item-content">沐桢</span>
+    </p>
+    
+    
+</div><footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">多Agent编排之手写调度器</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/mcp%E6%98%AF%E4%BB%80%E4%B9%88/">
+            <span class="next-text nav-default">MCP是什么</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2025-11-16 00:13:00 \u002b0800 CST',
+        title: '多Agent编排之langgraph调度',
+        clientID: 'Ov23liIOS4xVWBCr8CiQ',
+        clientSecret: '6a46848dfba641e0039bf1d5f3fe12b9537baee3',
+        repo: 'hugo-blog-comments',
+        owner: 'wushao666',
+        admin: ['wushao666'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:wslsdust@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/codevvvv9" class="iconfont icon-github" title="github"></a>
+  <a href="http://wushao666.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2026<span class="heart"><i class="iconfont icon-heart"></i></span><span>沐桢</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+  
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+  
+</body>
+</html>

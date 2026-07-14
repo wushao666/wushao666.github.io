@@ -19,7 +19,7 @@
     <item>
       <title>多Agent编排之重构检查点恢复</title>
       <link>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/</link>
-      <pubDate>Sun, 15 Feb 2026 00:39:00 +0800</pubDate>
+      <pubDate>Tue, 10 Mar 2026 00:39:00 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%A3%80%E6%9F%A5%E7%82%B9%E6%81%A2%E5%A4%8D/</guid>
       <description>还记得上一篇文章—手写调度器，我们提到的“检查点恢复”吗？ 遗留了一个小问题：无法从中断的具体 Agent/具体 phase 精确继续，是按照固定的流程继续</description>
@@ -28,10 +28,20 @@
     <item>
       <title>多Agent编排之手写调度器</title>
       <link>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/</link>
-      <pubDate>Thu, 08 Jan 2026 23:56:26 +0800</pubDate>
+      <pubDate>Thu, 19 Feb 2026 23:56:26 +0800</pubDate>
       
       <guid>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8B%E6%89%8B%E5%86%99%E8%B0%83%E5%BA%A6%E5%99%A8/</guid>
       <description>&lt;p&gt;众所周知目前多 agent 架构下，如何组织、调度各个 agent是个基础工作，业界常见的做法是使用 langgraph 直接做调度，但是我们的客户希望更加精细的展示，每个阶段的调度过程和结果，而 langgraph 只能做到某个阶段完成后才会展示结果，所以我决定自己手写一个调度器，来实现更精细的调度过程展示。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>多Agent编排之langgraph调度</title>
+      <link>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8Blanggraph%E8%B0%83%E5%BA%A6/</link>
+      <pubDate>Sun, 16 Nov 2025 00:13:00 +0800</pubDate>
+      
+      <guid>http://wushao666.github.io/post/%E5%A4%9Aagent%E7%BC%96%E6%8E%92%E4%B9%8Blanggraph%E8%B0%83%E5%BA%A6/</guid>
+      <description>&lt;p&gt;现在 agent 开发形势，就和当初前端从蛮荒时代进入到vue/react/solid框架时代一样，花式复杂啊，尤其是拆分成多个 agent 后，调度管理就变得复杂起来。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;多Agent核心问题不是调用多个 Agent，而是管理一个长期、可中断、可恢复、可分支的工作流。&lt;/strong&gt;&lt;/p&gt;</description>
     </item>
     
     <item>
