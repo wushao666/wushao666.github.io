@@ -8,6 +8,7 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMMIT_MESSAGE="chore: auto sync changes"
 DEBOUNCE_SECONDS="${DEBOUNCE_SECONDS:-5}"
+PUSH_TIMEOUT_SECONDS="${PUSH_TIMEOUT_SECONDS:-120}"
 LOCK_DIR="${TMPDIR:-/tmp}/wushao666-github-io-auto-git-sync.lock"
 NOTIFICATION_TITLE="wushao666 自动同步"
 
@@ -35,15 +36,51 @@ require_command() {
 
 with_lock() {
   if ! mkdir "$LOCK_DIR" 2>/dev/null; then
-    log "Previous sync is still running; skip this event."
-    return 0
+    local lock_pid
+    lock_pid="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+    if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+      log "Previous sync is still running; skip this event."
+      return 0
+    fi
+
+    log "Stale sync lock found; removing it."
+    rm -rf "$LOCK_DIR"
+
+    if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+      log "Cannot acquire sync lock; skip this event."
+      return 1
+    fi
   fi
+
+  printf '%s\n' "$$" >"$LOCK_DIR/pid"
 
   "$@"
   local status=$?
 
-  rmdir "$LOCK_DIR" 2>/dev/null || true
+  rm -rf "$LOCK_DIR"
   return "$status"
+}
+
+run_with_timeout() {
+  local timeout_seconds="$1"
+  shift
+
+  "$@" &
+  local command_pid=$!
+  local elapsed=0
+
+  while kill -0 "$command_pid" 2>/dev/null; do
+    if [ "$elapsed" -ge "$timeout_seconds" ]; then
+      kill "$command_pid" 2>/dev/null || true
+      wait "$command_pid" 2>/dev/null || true
+      return 124
+    fi
+
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+
+  wait "$command_pid"
 }
 
 sync_changes() {
@@ -86,9 +123,9 @@ sync_changes() {
   fi
 
   log "Pushing current branch: $branch"
-  if ! git push origin "$branch"; then
+  if ! run_with_timeout "$PUSH_TIMEOUT_SECONDS" git push origin "$branch"; then
     log "Push failed; local commit is preserved."
-    notify "同步失败：push 失败，本地 commit 已保留"
+    notify "同步失败：push 失败或超时，本地 commit 已保留"
     return 1
   fi
 
