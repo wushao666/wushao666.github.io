@@ -39,6 +39,7 @@ git push origin <当前分支>
 1. 为什么这样设计：用户希望在本地文件被修改后自动完成 `add -> commit -> push`，而不是按固定时间轮询。
 2. 怎么做的：脚本使用 `fswatch` 监听仓库目录，忽略 `.git` 和 `.DS_Store`，并通过防抖避免频繁触发。
 3. 做到了什么样子：有变更才提交；没有变更直接跳过；push 失败时保留本地 commit，不执行 `reset`、`rebase`、`force push` 等破坏性操作。
+4. 提示机制：同步成功、缺少依赖、无法进入仓库、detached HEAD、`git add` 失败、commit 失败、push 失败时，会通过 macOS 通知提示；无变更跳过时不提示，避免噪声。
 
 运行方式：
 
